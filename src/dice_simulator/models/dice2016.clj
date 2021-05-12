@@ -98,10 +98,22 @@ with land use change and non-CO2 radiative forcing and prescribed time period."
            (apply conj)))))
 
 (defn- non-negative-emissions-minimum
-  "Lower bound for any emissions pathway after 2015-2020
-before non-negative emissions become feasible (GtCO2 per time period)."
-  []
-  (repeat 28 0))
+  "Lower bound for any emissions pathway before non-negative emissions
+become feasible (GtCO2 per time period)."
+  [e1]
+  (cons e1 (repeat 28 0)))
+
+(defn- carbon-intensity
+  "Carbon intensity in 2015-2020 and in n subsequent time periods
+(tCO2/thousands 2010 USD)"
+  [e1 n time-step]
+  (->> (/ e1 (* 105.5 (- 1 0.03)))
+       (vector -0.0152)
+       (iterate (fn [[g s]]
+                  (vector (* g (math/expt (inc -0.001) time-step))
+                          (* s (math/expt Math/E (* g time-step))))))
+       (map second)
+       (take (inc n))))
 
 (defn model
   "DICE 2016 modules and parameters.
@@ -113,20 +125,23 @@ Units:
   initial global capital stock K(1) - trillions 2010 USD
   lower bound on emissions before non-negative emissions become feasible -
     GtCO2 per time period
-  labor input L(t) - billions (t = 1...n)
-  total factor productivity A(t) - unitless (t = 1...n)
+  carbon intensity \\sigma(t) - tCO2/thousands 2010 USD (t = 1...n+1)
+  labor input L(t) - billions (t = 1...n+1)
+  total factor productivity A(t) - unitless (t = 1...n+1)
   capital elasticity \\alpha - unitless
-  change in the global mean surface temperature - degree Celsius (t = 1...n)"
+  change in the global mean surface temperature - degree Celsius (t = 1...n+1)"
   [n time-step]
-  {:n-steps n
-   :time-step time-step
-   :depreciation-rate 0.1
-   :init {:industrial-emissions 35.85
-          :capital-stock 223}
-   :non-negative-emissions-minimum (non-negative-emissions-minimum)
-   :cobb-douglas {:labor (labor n)
-                  :tfp (tfp n time-step)
-                  :capital-elasticity 0.3}
-   :climate-module (climate-module (non-co2-forcing n)
-                                   (land-use-emissions n)
-                                   time-step)})
+  (let [e1 35.85]
+    {:n-steps n
+     :time-step time-step
+     :depreciation-rate 0.1
+     :init {:industrial-emissions e1
+            :capital-stock 223}
+     :non-negative-emissions-minimum (non-negative-emissions-minimum e1)
+     :carbon-intensity (carbon-intensity e1 n time-step)
+     :cobb-douglas {:labor (labor n)
+                    :tfp (tfp n time-step)
+                    :capital-elasticity 0.3}
+     :climate-module (climate-module (non-co2-forcing n)
+                                     (land-use-emissions n)
+                                     time-step)}))
