@@ -10,8 +10,7 @@
 (ns ^{:doc "Binary search implementation."
       :author "Anna Shchiptsova"}
  dice-simulator.compute.binary-search
-  (:require [clojure.math.numeric-tower :as math]
-            [utilities-clj.floating-point-comparison :refer :all]))
+  (:require [clojure.math.numeric-tower :as math]))
 
 ; from http://clojure-doc.org/articles/language/functions.html
 (defn- round
