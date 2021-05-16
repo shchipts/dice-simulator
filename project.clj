@@ -1,4 +1,4 @@
-(defproject org.iiasa/dice-simulator "0.1.0-SNAPSHOT"
+(defproject org.clojars.shchipts/dice-simulator "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "https://github.com/shchipts/dice-simulator"
   :scm {:name "git"
