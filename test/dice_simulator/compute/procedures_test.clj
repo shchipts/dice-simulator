@@ -22,8 +22,7 @@
             :time-step 2
             :depreciation-rate 0.5
             :init {:industrial-emissions 2.003 :capital-stock 1.0}
-            :non-negative-emissions-minimum nil
-            :max-cummulative-emissions 8.0
+            :max-cumulative-emissions 15.0
             :carbon-intensity '(1.5 1.0)
             :cobb-douglas {:labor '(1.0 1.0)
                            :tfp '(2.0 1.0)
@@ -37,8 +36,7 @@
             :time-step 2
             :depreciation-rate 0.5
             :init {:industrial-emissions 2.003 :capital-stock 1.0}
-            :non-negative-emissions-minimum nil
-            :max-cummulative-emissions 5.0
+            :max-cumulative-emissions 8.1
             :carbon-intensity '(1.5 1.0)
             :cobb-douglas {:labor '(1.0 1.0)
                            :tfp '(2.0 1.0)
@@ -78,7 +76,7 @@
             :depreciation-rate 0.5
             :init {:industrial-emissions 2.003 :capital-stock 1.0}
             :non-negative-emissions-minimum '(2.003 1.5)
-            :max-cummulative-emissions 8.0
+            :max-cumulative-emissions 15.0
             :carbon-intensity '(1.5 1.0)
             :cobb-douglas {:labor '(1.0 1.0)
                            :tfp '(2.0 1.0)
@@ -105,7 +103,7 @@
             :time-step 2
             :depreciation-rate 0.5
             :init {:industrial-emissions 2.003 :capital-stock 1.0}
-            :max-cummulative-emissions 8.0
+            :max-cumulative-emissions 15.0
             :carbon-intensity '(1.5 1.0)
             :cobb-douglas {:labor '(1.0 1.0)
                            :tfp '(2.0 1.0)
@@ -119,7 +117,7 @@
             :time-step 2
             :depreciation-rate 0.5
             :init {:industrial-emissions 2.003 :capital-stock 1.0}
-            :max-cummulative-emissions 5.0
+            :max-cumulative-emissions 8.1
             :carbon-intensity '(1.5 1.0)
             :cobb-douglas {:labor '(1.0 1.0)
                            :tfp '(2.0 1.0)
@@ -134,7 +132,7 @@
             :depreciation-rate 0.5
             :init {:industrial-emissions 2.003 :capital-stock 1.0}
             :non-negative-emissions-minimum '(2.003 1.5)
-            :max-cummulative-emissions 8.0
+            :max-cumulative-emissions 15.0
             :carbon-intensity '(1.5 1.0)
             :cobb-douglas {:labor '(1.0 1.0)
                            :tfp '(2.0 1.0)
@@ -149,7 +147,7 @@
             :depreciation-rate 0.5
             :init {:industrial-emissions 2.003 :capital-stock 1.0}
             :non-negative-emissions-minimum '(2.003 0.5)
-            :max-cummulative-emissions 5.0
+            :max-cumulative-emissions 8.1
             :carbon-intensity '(1.5 1.0)
             :cobb-douglas {:labor '(1.0 1.0)
                            :tfp '(2.0 1.0)
@@ -164,7 +162,7 @@
             :depreciation-rate 0.5
             :init {:industrial-emissions 2.003 :capital-stock 1.0}
             :non-negative-emissions-minimum '(2.003 0.5)
-            :max-cummulative-emissions 5.0
+            :max-cumulative-emissions 8.1
             :carbon-intensity '(1.5 1.0)
             :cobb-douglas {:labor '(1.0 1.0)
                            :tfp '(2.0 1.0)
@@ -207,7 +205,7 @@
                  :time-step 2
                  :depreciation-rate 0.5
                  :init {:industrial-emissions 2.003 :capital-stock 0.2}
-                 :max-cummulative-emissions 10.0
+                 :max-cumulative-emissions 21.0
                  :carbon-intensity '(6.0 5.0 1.0)
                  :cobb-douglas {:labor '(1.0 1.0 1.0)
                                 :tfp '(1.0 1.5 4.0)
@@ -217,7 +215,7 @@
                  :time-step 2
                  :depreciation-rate 0.5
                  :init {:industrial-emissions 2.003 :capital-stock 0.2}
-                 :max-cummulative-emissions 12.0
+                 :max-cumulative-emissions 21.0
                  :carbon-intensity '(6.0 5.0 2.0 1.0 0.5)
                  :cobb-douglas {:labor '(1.0 1.0 1.0 1.0 1.0)
                                 :tfp '(1.0 1.0 1.0 1.0 1.0)
@@ -292,7 +290,7 @@
              (assoc base2
                     :non-negative-emissions-minimum
                     '(2.003 0.5 0.5)
-                    :max-cummulative-emissions 2.5)
+                    :max-cumulative-emissions 5.0)
              (fn [_] (identity true))
              1.0)
             sims7

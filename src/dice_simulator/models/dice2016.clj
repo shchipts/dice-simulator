@@ -97,12 +97,6 @@ with land use change and non-CO2 radiative forcing and prescribed time period."
            ((juxt :temperature :TATM))
            (apply conj)))))
 
-(defn- non-negative-emissions-minimum
-  "Lower bound for any emissions pathway before non-negative emissions
-become feasible (GtCO2 per time period)."
-  [e1]
-  (cons e1 (repeat 28 0)))
-
 (defn- carbon-intensity
   "Carbon intensity in 2015-2020 and in n subsequent time periods
 (tCO2/thousands 2010 USD)"
@@ -125,6 +119,7 @@ Units:
   initial global capital stock K(1) - trillions 2010 USD
   lower bound on emissions before non-negative emissions become feasible -
     GtCO2 per time period
+  upper bound on cumulative industrial emissions - GtCO2
   carbon intensity \\sigma(t) - tCO2/thousands 2010 USD (t = 1...n+1)
   labor input L(t) - billions (t = 1...n+1)
   total factor productivity A(t) - unitless (t = 1...n+1)
@@ -137,7 +132,8 @@ Units:
      :depreciation-rate 0.1
      :init {:industrial-emissions e1
             :capital-stock 223}
-     :non-negative-emissions-minimum (non-negative-emissions-minimum e1)
+     :non-negative-emissions-minimum [e1]
+     :max-cumulative-emissions (* 6000 3.666)
      :carbon-intensity (carbon-intensity e1 n time-step)
      :cobb-douglas {:labor (labor n)
                     :tfp (tfp n time-step)

@@ -20,11 +20,13 @@
           out2 (run 1.1
                     2.3
                     #(if (< % 1.999) true false)
-                    1)]
+                    1)
+          out3 (run 1.1 1 (fn [_] (identity true)) 0.1)]
 
       ; Assert
       (is (real= out1 []))
-      (is (real= out2 [])))))
+      (is (real= out2 []))
+      (is (real= out3 [])))))
 
 (deftest all-values
   (testing "max value is feasible"

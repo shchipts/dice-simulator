@@ -16,7 +16,8 @@
 (defn- append-emissions
   "Append emission values for which climate module produces feasible output."
   [{ecoll-min :non-negative-emissions-minimum
-    cum-e :max-cummulative-emissions
+    cum-e :max-cumulative-emissions
+    h :time-step
     climate-module :climate-module}
    emissions
    emissions-max
@@ -25,7 +26,8 @@
    t]
   (let [e-min (if-not (nil? ecoll-min) (nth ecoll-min t 0) 0)
         e-max (->> (apply + emissions)
-                   (- cum-e)
+                   (- (/ cum-e h))
+                   (max 0)
                    (min (nth emissions-max t)))]
     (map #(conj emissions %)
          (binary-search/run e-min
@@ -39,7 +41,7 @@
                                            (concat x))))
                                    climate-module
                                    feasible?))
-                            grid-step))))
+                            grid-step))));)
 
 (defn- emissions-max
   "Emissions in case of minimum consumption, no abatement, and no damages."
