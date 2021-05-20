@@ -1,4 +1,3 @@
-
 ;   Copyright (c) 2021 International Institute for Applied Systems Analysis.
 ;   All rights reserved. The use and distribution terms for this software
 ;   are covered by the MIT License (http://opensource.org/licenses/MIT)

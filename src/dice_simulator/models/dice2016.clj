@@ -8,11 +8,25 @@
 
 (ns ^{:doc "DICE 2016 (Nordhaus 2017).
 
-Based on DICE-2016R2-083017.gms available at https://sites.google.com/site/williamdnordhaus/dice-rice
-Nordhaus, W. (2017). Revisiting the Social Cost of Carbon. PNAS, 114(7): 1518-1523."
+Based on DICE-2016R2-083017.gms available at
+  https://sites.google.com/site/williamdnordhaus/dice-rice
+Nordhaus, W. (2017). Revisiting the Social Cost of Carbon.
+  PNAS, 114(7): 1518-1523."
       :author "Anna Shchiptsova"}
  dice-simulator.models.dice2016
   (:require [clojure.math.numeric-tower :as math]))
+
+(def ^:private unadjusted-fractional-cost
+  "Fractional abatement cost to global output from GHG emissions control
+(without price adjustement factor due to technological improvements and
+emissions to output ratio)."
+  (fn [mu]
+    (/ (* 550 (math/expt mu 2.6)) 2.6)))
+
+(def ^:private damage-function
+  "Fractional loss of global output from GHG warming."
+  (fn [posterior prior model-instance]
+    (* 0.00236 (math/expt (:temperature posterior) 2))))
 
 (defn- labor
   "Labor input in 2015-2020 and in n subsequent time periods (billions)."
@@ -124,7 +138,9 @@ Units:
   labor input L(t) - billions (t = 1...n+1)
   total factor productivity A(t) - unitless (t = 1...n+1)
   capital elasticity \\alpha - unitless
-  change in the global mean surface temperature - degree Celsius (t = 1...n+1)"
+  change in the global mean surface temperature - degree Celsius (t = 1...n+1)
+  unadjusted abatement cost - 2010 USD / tCO2
+  climate change damage - unitless"
   [n time-step]
   (let [e1 35.85]
     {:n-steps n
@@ -140,4 +156,6 @@ Units:
                     :capital-elasticity 0.3}
      :climate-module (climate-module (non-co2-forcing n)
                                      (land-use-emissions n)
-                                     time-step)}))
+                                     time-step)
+     :unadjusted-abatement-cost unadjusted-fractional-cost
+     :damages damage-function}))

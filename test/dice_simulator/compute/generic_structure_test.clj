@@ -95,3 +95,45 @@
       ; Assert
       (is (real= e1 39.3835637138958))
       (is (real= e2 35.7447136540239)))))
+
+(deftest gdp-test
+  (testing "GDP net of abatement and damages"
+    (; Arrange
+     let [model {:cobb-douglas
+                 {:labor [7.403 7.85309085 8.26492066
+                          8.63897496 8.97655692 9.27954298]
+                  :tfp [5.115 5.53571429 5.97889093
+                        6.44480826 6.93369256 7.44571697]
+                  :capital-elasticity 0.3}
+                 :carbon-intensity [0.350320027 0.324682279 0.301034941
+                                    0.279215233 0.259074324 0.240476081]
+                 :unadjusted-abatement-cost
+                 (fn [x]
+                   (cond
+                     (real= x 0.25624950) 0.02813310123
+                     (real= x 0.24697883) 0.06312380788
+                     :else 0))
+                 :damages
+                 (fn [posterior prior model-instance]
+                   (cond
+                     (and (real= (:capital-stock posterior) 267.9421708)
+                          (real= (:temperature posterior) 1.01634518)
+                          (real= (:capital-stock prior) 223)
+                          (real= (:temperature prior) 0.85)) 0.0024377798
+                     (and (real= (:capital-stock posterior) 504.7555419)
+                          (real= (:temperature posterior) 1.74002086)
+                          (real= (:capital-stock prior) 436.6775239)
+                          (real= (:temperature prior) 1.55174653)) 0.0071453073
+                     :else 0))}
+          posterior1 {:capital-stock  267.9421708 :temperature 1.01634518}
+          prior1 {:capital-stock 223 :temperature 0.85}
+          posterior2 {:capital-stock 504.7555419 :temperature 1.74002086}
+          prior2 {:capital-stock 436.6775239 :temperature 1.55174653}]
+
+      (; Act
+       let [gdp1 (gdp model posterior1 prior1 0.25624950 1)
+            gdp2 (gdp model posterior2 prior2 0.24697883 5)]
+
+        ; Assert
+        (is (real= gdp1 125.04045325))
+        (is (real= gdp2 227.49890267))))))

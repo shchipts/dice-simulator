@@ -41,7 +41,7 @@
                                            (concat x))))
                                    climate-module
                                    feasible?))
-                            grid-step))));)
+                            grid-step))))
 
 (defn- emissions-max
   "Emissions in case of minimum consumption, no abatement, and no damages."

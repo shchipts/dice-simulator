@@ -44,3 +44,22 @@ either consumed or invested."
   (* (nth s t)
      (- 1 rate_t)
      (output model-instance capital-stock_t t)))
+
+(defn gdp
+  "GDP net of damages and abatement."
+  [{s :carbon-intensity
+    damages :damages
+    cost :unadjusted-abatement-cost
+    :as model-instance}
+   posterior
+   prior
+   rate_t
+   t]
+  (-> (- 1 0.025)
+      (math/expt t)
+      (* (cost rate_t)
+         (nth s t))
+      (/ 1000)
+      (+ (damages posterior prior model-instance))
+      (#(- 1 %))
+      (* (output model-instance (:capital-stock posterior) t))))

@@ -46,4 +46,14 @@
                   1.74002086 1.93207743 2.12722733 2.32477390 2.52402262
                   2.72429207 2.92492408]))
       (is (real= (:max-cumulative-emissions dice)
-                 21996)))))
+                 21996))
+
+      (is (real= ((:unadjusted-abatement-cost dice) 0.037727673)
+                 0.04214105455))
+      (is (real= ((:unadjusted-abatement-cost dice) 0.040776287)
+                 0.05157619442))
+
+      (is (real= ((:damages dice) {:temperature 1.18923663} nil nil)
+                 0.003337710))
+      (is (real= ((:damages dice) {:temperature 1.36792985} nil nil)
+                 0.004416108)))))
