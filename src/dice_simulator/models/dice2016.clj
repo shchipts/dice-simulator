@@ -14,7 +14,8 @@ Nordhaus, W. (2017). Revisiting the Social Cost of Carbon.
   PNAS, 114(7): 1518-1523."
       :author "Anna Shchiptsova"}
  dice-simulator.models.dice2016
-  (:require [clojure.math.numeric-tower :as math]))
+  (:require [clojure.math.numeric-tower :as math]
+            [utilities-clj.floating-point-comparison :refer :all]))
 
 (def ^:private unadjusted-fractional-cost
   "Fractional abatement cost to global output from GHG emissions control
@@ -27,6 +28,11 @@ emissions to output ratio)."
   "Fractional loss of global output from GHG warming."
   (fn [posterior prior model-instance]
     (* 0.00236 (math/expt (:temperature posterior) 2))))
+
+(def ^:private feasible-decarbonization
+  "A set of constraints on the technologically feasible decarbonization."
+  {:reduction-max (fn [e t] (if (< t 8) (- e 10)))
+   :rate-max (fn [mu t] (if (< t 8) 1 (min 1.2 (* 1.1 mu))))})
 
 (defn- labor
   "Labor input in 2015-2020 and in n subsequent time periods (billions)."
@@ -158,4 +164,5 @@ Units:
                                      (land-use-emissions n)
                                      time-step)
      :unadjusted-abatement-cost unadjusted-fractional-cost
-     :damages damage-function}))
+     :damages damage-function
+     :feasible-decarbonization feasible-decarbonization}))
