@@ -58,11 +58,11 @@
       (is (real= ((:damages dice) {:temperature 1.36792985} nil nil)
                  0.004416108))
 
-      (is (real= ((:reduction-max (:feasible-decarbonization dice)) 5 1)
+      (is (real= ((:emissions-min (:feasible-decarbonization dice)) 5 1)
                  -5))
-      (is (real= ((:reduction-max (:feasible-decarbonization dice)) 12 7)
+      (is (real= ((:emissions-min (:feasible-decarbonization dice)) 12 7)
                  2))
-      (is (nil? ((:reduction-max (:feasible-decarbonization dice)) 12 8)))
+      (is (nil? ((:emissions-min (:feasible-decarbonization dice)) 12 8)))
 
       (is (real= ((:rate-max (:feasible-decarbonization dice)) 5 1)
                  1))

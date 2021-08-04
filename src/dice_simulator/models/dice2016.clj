@@ -31,7 +31,7 @@ emissions to output ratio)."
 
 (def ^:private feasible-decarbonization
   "A set of constraints on the technologically feasible decarbonization."
-  {:reduction-max (fn [e t] (if (< t 8) (- e 10)))
+  {:emissions-min (fn [e t] (if (< t 8) (- e 10)))
    :rate-max (fn [mu t] (if (< t 8) 1 (min 1.2 (* 1.1 mu))))})
 
 (defn- labor
