@@ -6,13 +6,13 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns ^{:doc "DICE-like generic model."
+(ns ^{:doc "DICE-like generic model"
       :author "Anna Shchiptsova"}
  dice-simulator.compute.generic-structure
   (:require [clojure.math.numeric-tower :as math]))
 
 (defn output
-  "Output gross of abatement cost and climate damage."
+  "Output gross of abatement cost and climate damage"
   [{{labor :labor tfp :tfp a :capital-elasticity} :cobb-douglas}
    capital-stock_t
    t]
@@ -21,7 +21,7 @@
      (math/expt capital-stock_t a)))
 
 (defn capital-stock
-  "The law of motion of the capital stock."
+  "The law of motion of the capital stock"
   [{d :depreciation-rate h :time-step} capital-stock investment]
   (+ (* (math/expt (- 1 d) h)
         capital-stock)
@@ -29,14 +29,14 @@
 
 (defn investment
   "The total amount of final goods in the closed economy must be
-either consumed or invested."
+either consumed or invested"
   [{{labor :labor} :cobb-douglas} gdp_t consumption-per-capita_t t]
   (- gdp_t
      (* consumption-per-capita_t
         (nth labor t))))
 
 (defn emissions
-  "Industrial CO2 emissions from the produced output after abatement."
+  "Industrial CO2 emissions from the produced output after abatement"
   [{s :carbon-intensity :as model-instance}
    rate_t
    capital-stock_t
@@ -46,7 +46,7 @@ either consumed or invested."
      (output model-instance capital-stock_t t)))
 
 (defn gdp
-  "GDP net of damages and abatement."
+  "GDP net of damages and abatement"
   [{s :carbon-intensity
     damages :damages
     cost :unadjusted-abatement-cost
