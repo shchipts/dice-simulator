@@ -6,7 +6,7 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns ^{:doc "Emissions paths on a tree with value constraints"
+(ns ^{:doc "Emissions tree on a grid with value constraints"
       :author "Anna Shchiptsova"}
  dice-simulator.compute.techno-tree
   (:require [clojure.math.numeric-tower :as math]
