@@ -199,6 +199,83 @@
                 :layer-size [1 2]
                 :heads [1 1 3]}))))))
 
+(deftest traverse-single-level
+  (testing "graph with one level of nodes"
+    (; Act
+     let [paths1 (walk {:level-size [3]
+                        :gross [1 1 1]
+                        :abated [0 1 2]
+                        :layer-size []
+                        :heads []})
+          paths2 (walk {:level-size [0]
+                        :gross []
+                        :abated []
+                        :layer-size []
+                        :heads []})]
+
+      ; Assert
+      (is (= paths1
+             '([1]
+               [2]
+               [3])))
+
+      (is (= paths2
+             '())))))
+
+(deftest traverse-many-levels
+  (testing "graph with more one level of nodes"
+    (; Act
+     let [paths1 (walk {:level-size [2 1 2 6]
+                        :gross [3 2 4 5 5 2 2 2 2 3 3]
+                        :abated [0 0 0 0 1 0 1 2 3 0 1]
+                        :layer-size [2 1 1 2 1 1 1 1 1]
+                        :heads [1 2 3 3 4 5 4 4 4 5 5]})
+          paths2 (walk {:level-size [3 2]
+                        :gross [4 4 4 2 2]
+                        :abated [2 3 4 1 2]
+                        :layer-size [2 3]
+                        :heads [1 2 1 2 3]})
+          paths3 (walk {:level-size [2 1 2 4]
+                        :gross [3 2 4 5 5 2 2 2 2]
+                        :abated [0 0 0 0 1 0 1 2 3]
+                        :layer-size [2 1 1 1 1 1 1]
+                        :heads [1 2 3 3 4 4 4 4]})]
+
+      ; Assert
+      (is (= paths1
+             '([1 3 4 6]
+               [2 3 4 6]
+               [1 3 5 6]
+               [2 3 5 6]
+               [1 3 4 7]
+               [2 3 4 7]
+               [1 3 4 8]
+               [2 3 4 8]
+               [1 3 4 9]
+               [2 3 4 9]
+               [1 3 5 10]
+               [2 3 5 10]
+               [1 3 5 11]
+               [2 3 5 11])))
+
+      (is (= paths2
+             '([1 4]
+               [2 4]
+               [1 5]
+               [2 5]
+               [3 5])))
+
+      (is (= paths3
+             '([1 3 4 6]
+               [2 3 4 6]
+               [1 3 4 7]
+               [2 3 4 7]
+               [1 3 4 8]
+               [2 3 4 8]
+               [1 3 4 9]
+               [2 3 4 9]))))))
+
+
 ;;; test grouping
 
 
@@ -207,6 +284,11 @@
     (grid-cells)
     (grid-paths)))
 
+(deftest walk-test
+  (testing "Traverse tree:\n"
+    (traverse-single-level)
+    (traverse-many-levels)))
+
 
 ;;; tests in the namespace
 
@@ -214,4 +296,5 @@
 (defn test-ns-hook
   "Explicit definition of tests in the namespace"
   []
-  (graph-test))
+  (graph-test)
+  (walk-test))

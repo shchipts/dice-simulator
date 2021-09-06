@@ -128,6 +128,53 @@
                   (merge {:layer-size [] :heads []}))))
      (next-level t h [e0 e0_] limitf maxf))))
 
+(defn- initialize-paths
+  "Traverses initial level"
+  [graph]
+  ((juxt (comp rest :level-size)
+         :layer-size
+         :heads
+         (comp first :level-size)
+         (fn [{levels :level-size}]
+           (->> (first levels)
+                inc
+                (range 1)
+                (#(zipmap % (repeat []))))))
+   graph))
+
+(defn- insert-into
+  "Appends nodes to paths, for which a node is terminal"
+  [paths nodes]
+  (persistent!
+   (reduce
+    (fn [seed1 node]
+      (let [sub-paths (get paths node)]
+        (if (empty? sub-paths)
+          (conj! seed1 (vector node))
+          (reduce
+           (fn [seed2 path]
+             (conj! seed2 (conj path node)))
+           seed1
+           sub-paths))))
+    (transient [])
+    nodes)))
+
+(defn- append-paths
+  "Appends nodes of next graph level to existing paths"
+  [paths layers heads]
+  (->> (list layers heads [])
+       (iterate
+        (fn [[next-layers next-heads coll]]
+          (let [m (first next-layers)]
+            (->> (take m next-heads)
+                 (insert-into paths)
+                 (conj coll)
+                 (list (rest next-layers)
+                       (drop m next-heads))))))
+       (drop-while (comp seq first))
+       first
+       last))
+
 (defn graph
   "Builds emissions graph starting from the specified point of emitted
 and abated emissions at time 0. Samples nodes on a grid that has cell sizes
@@ -144,3 +191,26 @@ node (:layer-size), head indexes (:heads)"
                ((juxt first #(append % pre-graph)))
                (apply vector (inc t)))))
        (map last)))
+
+(defn walk
+  "Traverses all paths to the terminal level of a graph"
+  [graph]
+  (->> (initialize-paths graph)
+       (iterate
+        (fn [[levels layers heads counter paths]]
+          (let [n (first levels)
+                [level-layers m] ((juxt identity
+                                        #(apply + %))
+                                  (take n layers))]
+            (list (rest levels)
+                  (drop n layers)
+                  (drop m heads)
+                  (+ counter n)
+                  (->> (take m heads)
+                       (append-paths paths level-layers)
+                       (zipmap (range (inc counter) (inc (+ counter n)))))))))
+       (drop-while (comp seq first))
+       first
+       last
+       ((juxt identity (comp sort keys)))
+       (apply insert-into)))
