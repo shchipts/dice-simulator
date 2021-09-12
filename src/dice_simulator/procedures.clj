@@ -31,7 +31,7 @@ a node (:layer-size) and head indexes (:heads)"
           :cobb-douglas
           d :depreciation-rate
           z :time-step} parameters
-         {{{emax :maximum} :produced} :emissions} constraints
+         {{{emax :maximum} :produced} :industrial-emissions} constraints
          divf (fn [t coll]
                 (->> ((juxt inc identity) t)
                      (map #(nth coll %))
