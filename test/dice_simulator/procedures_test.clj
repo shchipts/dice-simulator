@@ -25,8 +25,9 @@
                                                :capital-elasticity 1}
                                 :depreciation-rate 0
                                 :carbon-intensity [1 1 1]}
-                               {:industrial-emissions
-                                {:produced {:maximum [2 2]}}
+                               {:volume
+                                {:industrial-emissions
+                                 {:produced {:maximum [2 2]}}}
                                 :decarbonization
                                 {:post-peak {:reduction-rate
                                              {:maximum 0.8
@@ -53,8 +54,9 @@
                                                :capital-elasticity 1}
                                 :depreciation-rate 0
                                 :carbon-intensity [1 1 1]}
-                               {:industrial-emissions
-                                {:produced {:maximum [2 2]}}
+                               {:volume
+                                {:industrial-emissions
+                                 {:produced {:maximum [2 2]}}}
                                 :decarbonization
                                 {:pre-peak {:reduction {:growth 0.2}
                                             :reduction-rate {:maximum 0.65}}
@@ -80,8 +82,9 @@
                                                :capital-elasticity 0.3}
                                 :depreciation-rate 0.1
                                 :carbon-intensity [0.8 0.75 0.72]}
-                               {:industrial-emissions
-                                {:produced {:maximum [3.9 3.4]}}
+                               {:volume
+                                {:industrial-emissions
+                                 {:produced {:maximum [3.9 3.4]}}}
                                 :decarbonization
                                 {:post-peak {:reduction-rate
                                              {:maximum 0.25 :growth-rate 1.2}}
