@@ -31,7 +31,7 @@ a node (:layer-size) and head indexes (:heads)"
           :cobb-douglas
           d :depreciation-rate
           z :time-step} parameters
-         {g :gross-gdp-growth-rate} constraints
+         {{{emax :maximum} :produced} :emissions} constraints
          divf (fn [t coll]
                 (->> ((juxt inc identity) t)
                      (map #(nth coll %))
@@ -43,7 +43,7 @@ a node (:layer-size) and head indexes (:heads)"
                        (math/expt (divf t labor) (- 1 a))
                        (math/expt (- 1 d) (* a z))
                        %)
-                   #(* (inc g) %))))))
+                   (fn [_] (nth emax t)))))))
    (let [{{peak-t :net-zero-timing
            {pre-peak-reduction :reduction
             pre-peak-rate :reduction-rate} :pre-peak

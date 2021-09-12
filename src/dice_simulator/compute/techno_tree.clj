@@ -27,10 +27,10 @@
   ([x reverse?]
    (->> (map #(int (math/floor %)) x)
         ((juxt first #(inc (second %))))
-        ((fn [[x y]]
+        ((fn [[xx yy]]
            (if (true? reverse?)
-             (range (dec y) (dec x) -1)
-             (range x y)))))))
+             (range (dec yy) (dec xx) -1)
+             (range xx yy)))))))
 
 (defn- next-level
   "Determines descendants for a node"

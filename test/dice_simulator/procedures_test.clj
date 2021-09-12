@@ -25,7 +25,7 @@
                                                :capital-elasticity 1}
                                 :depreciation-rate 0
                                 :carbon-intensity [1 1 1]}
-                               {:gross-gdp-growth-rate 0
+                               {:emissions {:produced {:maximum [2 2]}}
                                 :decarbonization
                                 {:post-peak {:reduction-rate
                                              {:maximum 0.8
@@ -52,7 +52,7 @@
                                                :capital-elasticity 1}
                                 :depreciation-rate 0
                                 :carbon-intensity [1 1 1]}
-                               {:gross-gdp-growth-rate 0
+                               {:emissions {:produced {:maximum [2 2]}}
                                 :decarbonization
                                 {:pre-peak {:reduction {:growth 0.2}
                                             :reduction-rate {:maximum 0.65}}
@@ -78,7 +78,7 @@
                                                :capital-elasticity 0.3}
                                 :depreciation-rate 0.1
                                 :carbon-intensity [0.8 0.75 0.72]}
-                               {:gross-gdp-growth-rate 0.05
+                               {:emissions {:produced {:maximum [3.9 3.4]}}
                                 :decarbonization
                                 {:post-peak {:reduction-rate
                                              {:maximum 0.25 :growth-rate 1.2}}
@@ -86,11 +86,11 @@
 
       ; Assert
       (is (= (first (drop 1 tree))
-             {:level-size [1 4]
-              :gross [7 7 6 6 5]
-              :abated [1 1 0 1 0]
-              :layer-size [1 1 1 1]
-              :heads [1 1 1 1]})))))
+             {:level-size [1 3]
+              :gross [7 6 6 5]
+              :abated [1 0 1 0]
+              :layer-size [1 1 1]
+              :heads [1 1 1]})))))
 
 
 ;;; test grouping
