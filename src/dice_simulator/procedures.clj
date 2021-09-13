@@ -19,10 +19,10 @@
 Returned value represents graph structure by the number of nodes at each time
 step (:level-size), node labels (:gross and :abated), number of edges coming to
 a node (:layer-size) and head indexes (:heads)"
-  [h {e0 :industrial-emissions k0 :capital-stock} parameters constraints]
+  [h {e0 :industrial-emissions mu0 :reduction-rate} parameters constraints]
   (techno-tree/graph
    h
-   (->> (generic/emissions parameters 0 k0 0)
+   (->> (/ e0 (- 1 mu0))
         (#(- % e0))
         (vector e0)
         (zipmap [:emitted :abated]))

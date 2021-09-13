@@ -18,7 +18,7 @@
     (; Act
      let [tree (emissions-tree 0.5
                                {:industrial-emissions 1.0
-                                :capital-stock 2.0}
+                                :reduction-rate 0.5}
                                {:time-step 5
                                 :cobb-douglas {:labor [1 1 1]
                                                :tfp [1 1 1]
@@ -47,7 +47,7 @@
     (; Act
      let [tree (emissions-tree 0.1
                                {:industrial-emissions 1.0
-                                :capital-stock 2.0}
+                                :reduction-rate 0.5}
                                {:time-step 5
                                 :cobb-douglas {:labor [1 1 1]
                                                :tfp [1 1 1]
@@ -75,7 +75,7 @@
     (; Act
      let [tree (emissions-tree 0.5
                                {:industrial-emissions 3.0
-                                :capital-stock 1.56765946167363}
+                                :reduction-rate 0.25}
                                {:time-step 5
                                 :cobb-douglas {:labor [4.2 5.1 5.4]
                                                :tfp [1.6 1.7 1.7]
