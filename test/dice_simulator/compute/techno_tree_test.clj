@@ -228,6 +228,38 @@
                 :layer-size [1 2]
                 :heads [1 1 3]}))))))
 
+(deftest grid-rounding
+  (testing "produced emissions can take only positive values on a grid"
+    (; Arrange
+     let [f1 (fn [coll]
+               (fn [t x y]
+                 (->> (filter
+                       (fn [[tt xx yy z]]
+                         (and (= t tt)
+                              (real= x xx)
+                              (real= y yy)))
+                       coll)
+                      first
+                      last)))
+          f3 (fn [t pre-e cur-e] (identity true))]
+
+      (; Act
+       let [out (graph 0.5
+                       {:emitted 2 :abated 2}
+                       (f1 [[0 2 2 [0 0.5]]
+                            [1 0.5 0 [1 1]]
+                            [1 0 0.5 [1 1]]])
+                       (fn [t x y q] (identity 1))
+                       f3)]
+
+        ; Assert
+        (is (= (first (drop 1 out))
+               {:level-size [2 3]
+                :gross [1 1 2 2 2]
+                :abated [0 1 0 1 2]
+                :layer-size [1 1 2]
+                :heads [1 1 1 2]}))))))
+
 (deftest include-only-feasible-nodes
   (testing "check whether node can be included in some path"
     (; Arrange
@@ -384,7 +416,8 @@
   (testing "Construct tree:\n"
     (grid-cells)
     (grid-paths)
-    (include-only-feasible-nodes)))
+    (include-only-feasible-nodes)
+    (grid-rounding)))
 
 (deftest walk-test
   (testing "Traverse tree:\n"

@@ -39,6 +39,7 @@
     (->> (limitf t prev-emitted prev-abated)
          (map #(round (/ % h)))
          (#(find-range % true))
+         (filter pos?)
          (reduce
           (fn [seed1 next-full]
             (let [mu-max (maxf t prev-emitted prev-abated (* next-full h))]
