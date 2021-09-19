@@ -11,14 +11,16 @@
  dice-simulator.procedures
   (:require [clojure.math.numeric-tower :as math]
             [dice-simulator.compute.generic-structure :as generic]
-            [dice-simulator.compute.techno-tree :as techno-tree]))
+            [dice-simulator.compute.techno-tree :as techno-tree]
+            [utilities-clj.floating-point-comparison :refer :all]))
 
 (defn emissions-tree
   "Returns a sampled graph of temporal emissions where node values satisfy
- constraints on feasible economic growth and feasible speed of decarbonization.
-Returned value represents graph structure by the number of nodes at each time
-step (:level-size), node labels (:gross and :abated), number of edges coming to
-a node (:layer-size) and head indexes (:heads)"
+ constraints on feasible economic growth, feasible speed of decarbonization
+and feasible cummulative emissions. Returned value represents graph structure
+by the number of nodes at each time step (:level-size), node labels
+(:gross and :abated), number of edges coming to a node (:layer-size) and
+head indexes (:heads)"
   [h {e0 :industrial-emissions mu0 :reduction-rate} parameters constraints]
   (techno-tree/graph
    h
@@ -27,8 +29,7 @@ a node (:layer-size) and head indexes (:heads)"
         (vector e0)
         (zipmap [:emitted :abated]))
    (let [{s :carbon-intensity
-          {labor :labor tfp :tfp a :capital-elasticity}
-          :cobb-douglas
+          {labor :labor tfp :tfp a :capital-elasticity} :cobb-douglas
           d :depreciation-rate
           z :time-step} parameters
          {{{{emax :maximum} :produced} :industrial-emissions}
@@ -61,4 +62,38 @@ a node (:layer-size) and head indexes (:heads)"
               (/ pre-emitted)
               (- 1)
               (* (:growth-rate post-peak-rate))
-              (min (:maximum post-peak-rate))))))))
+              (min (:maximum post-peak-rate))))))
+   (let [{z :time-step} parameters
+         {{peak-t :net-zero-timing
+           {{pre-peak-growth :growth} :reduction} :pre-peak}
+          :decarbonization
+          {{{cummax :maximum} :cumulative-emissions} :industrial-emissions}
+          :volume} constraints
+         get-path (fn [growth from start end]
+                    (->> (range start end)
+                         (reduce
+                          (fn [seed k]
+                            (let [v (- from (* k growth))]
+                              (if (pos? v)
+                                (conj seed v)
+                                (reduced seed))))
+                          [])
+                         (apply +)))
+         get-pre-path (fn [end] (get-path pre-peak-growth e0 0 end))]
+     (fn [t pre-emitted cur-emitted]
+       (let [insert-and-compare
+             (fn [v]
+               (->> (+ v pre-emitted cur-emitted)
+                    (* z)
+                    (real>= cummax)))]
+         (or (nil? cummax)
+             (and (> (inc t) peak-t)
+                  (insert-and-compare (get-pre-path peak-t)))
+             (and (< t peak-t)
+                  (>= t (dec (dec peak-t)))
+                  (insert-and-compare (get-pre-path t)))
+             (and (< (inc t) (dec peak-t))
+                  (->> (- peak-t (inc t))
+                       (get-path pre-peak-growth cur-emitted 1)
+                       (+ (get-pre-path t))
+                       insert-and-compare))))))))

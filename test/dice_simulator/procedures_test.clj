@@ -13,7 +13,7 @@
 
 ;;; tests
 
-(deftest post-peak-constraints
+(deftest post-peak-decarbonization-constraints
   (testing "constraints on speed of decarbonization after peak warming"
     (; Act
      let [tree (emissions-tree 0.5
@@ -42,7 +42,7 @@
               :layer-size [1 2]
               :heads [1 1 2]})))))
 
-(deftest pre-peak-constraints
+(deftest pre-peak-decarbonization-constraints
   (testing "constraints on speed of decarbonization before peak warming"
     (; Act
      let [tree (emissions-tree 0.1
@@ -98,15 +98,91 @@
               :layer-size [1 1 1]
               :heads [1 1 1]})))))
 
+(deftest cummulative-emissions-constraint
+  (testing "check cumulative emissions constraints"
+    (; Arrange
+     let [init {:industrial-emissions 1.0 :reduction-rate 0}
+          pars {:time-step 5
+                :cobb-douglas {:labor [1 1 1 1 1 1 1 1]
+                               :tfp [1 1 1 1 1 1 1 1]
+                               :capital-elasticity 1}
+                :depreciation-rate 0
+                :carbon-intensity [1 1 1 1 1 1 1 1]}
+          conf (fn [net-zero-timing growth cummax]
+                 {:volume
+                  {:industrial-emissions
+                   {:produced {:maximum [1 1 1 1 1 1 1 1]}
+                    :cumulative-emissions {:maximum cummax}}}
+                  :decarbonization
+                  {:pre-peak {:reduction {:growth growth}
+                              :reduction-rate {:maximum 0}}
+                   :post-peak {:reduction-rate
+                               {:maximum 0 :growth-rate 0}}
+                   :net-zero-timing net-zero-timing}})]
+
+      (; Act
+       let [tree1 (emissions-tree 0.5 init pars (conf 4 0.2 23.99))
+            tree2 (emissions-tree 0.5 init pars (conf 4 0.2 21.99))
+            tree3 (emissions-tree 0.5 init pars (conf 3 0.2 18.99))
+            tree4 (emissions-tree 0.5 init pars (conf 7 0.1 31.99))
+            tree5 (emissions-tree 0.5 init pars (conf 4 0.1 19.49))
+            tree6 (emissions-tree 0.5 init pars (conf 7 0.8 16.99))
+            tree7 (emissions-tree 0.5 init pars (conf 5 0.8 15.99))]
+
+        ; Assert
+        (is (= (first (drop 5 tree1))
+               {:level-size [1 1 1 1 0 0]
+                :gross [2 2 2 2]
+                :abated [0 0 0 0]
+                :layer-size [1 1 1]
+                :heads [1 2 3]}))
+        (is (= (first (drop 5 tree2))
+               {:level-size [1 1 1 0 0 0]
+                :gross [2 2 2]
+                :abated [0 0 0]
+                :layer-size [1 1]
+                :heads [1 2]}))
+        (is (= (first (drop 5 tree3))
+               {:level-size [1 1 0 0 0 0]
+                :gross [2 2]
+                :abated [0 0]
+                :layer-size [1]
+                :heads [1]}))
+        (is (= (first (drop 6 tree4))
+               {:level-size [1 1 1 0 0 0 0]
+                :gross [2 2 2]
+                :abated [0 0 0]
+                :layer-size [1 1]
+                :heads [1 2]}))
+        (is (= (first (drop 2 tree5))
+               {:level-size [1 0 0]
+                :gross [2]
+                :abated [0]
+                :layer-size []
+                :heads []}))
+        (is (= (first (drop 2 tree6))
+               {:level-size [1 1 0]
+                :gross [2 2]
+                :abated [0 0]
+                :layer-size [1]
+                :heads [1]}))
+        (is (= (first (drop 1 tree7))
+               {:level-size [1 0]
+                :gross [2]
+                :abated [0]
+                :layer-size []
+                :heads []}))))))
+
 
 ;;; test grouping
 
 
 (deftest emissions-tree-test
   (testing "Emissions tree:\n"
-    (post-peak-constraints)
-    (pre-peak-constraints)
-    (investment-constraints)))
+    (post-peak-decarbonization-constraints)
+    (pre-peak-decarbonization-constraints)
+    (investment-constraints)
+    (cummulative-emissions-constraint)))
 
 
 ;;; tests in the namespace

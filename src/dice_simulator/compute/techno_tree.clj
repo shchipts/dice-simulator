@@ -34,7 +34,7 @@
 
 (defn- next-level
   "Determines descendants for a node"
-  [t h [prev-emitted prev-abated] limitf maxf]
+  [t h [prev-emitted prev-abated] limitf maxf candidate?]
   (let [mu-min (- 1 (/ prev-emitted (+ prev-emitted prev-abated)))]
     (->> (limitf t prev-emitted prev-abated)
          (map #(round (/ % h)))
@@ -48,7 +48,11 @@
                      find-range
                      (reduce
                       (fn [seed2 abated]
-                        (conj! seed2 (list next-full abated)))
+                        (if (true? (->> (- next-full abated)
+                                        (* h)
+                                        (candidate? t prev-emitted)))
+                          (conj! seed2 (list next-full abated))
+                          seed2))
                       seed1))
                 seed1)))
           (transient []))
@@ -56,14 +60,14 @@
 
 (defn- next-level-many
   "Determines descendants for a level"
-  [t points h limitf maxf]
+  [t points h limitf maxf candidate?]
   (->> (reduce-kv
         (fn [seed1 in idx]
           (->> (map #(* h %) in)
                ((juxt (fn [[gross abated]]
                         (- gross abated))
                       second))
-               (#(next-level t h % limitf maxf))
+               (#(next-level t h % limitf maxf candidate?))
                (reduce
                 (fn [[counter coll m] out]
                   (if (contains? coll out)
@@ -112,7 +116,7 @@
 
 (defn- roots
   "Determines root nodes in a forest"
-  [h {e0 :emitted e0_ :abated} limitf maxf]
+  [h {e0 :emitted e0_ :abated} limitf maxf candidate?]
   (let [t 0]
     ((juxt (fn [_] (inc t))
            (fn [points]
@@ -126,7 +130,7 @@
                    points)
                   (zipmap [:level-size :gross :abated])
                   (merge {:layer-size [] :heads []}))))
-     (next-level t h [e0 e0_] limitf maxf))))
+     (next-level t h [e0 e0_] limitf maxf candidate?))))
 
 (defn- initialize-paths
   "Traverses initial level"
@@ -179,15 +183,16 @@
   "Builds emissions graph starting from the specified point of emitted
 and abated emissions at time 0. Samples nodes on a grid that has cell sizes
 equal to h. Applies limitf and maxf to determine gross emissions value domain
-and maximal emissions reduction rate (correspondingly) at a given point.
-Returns graph structure represented by the number of nodes at each time step
-(:level-size), node labels (:gross and :abated), number of edges coming to a
-node (:layer-size), head indexes (:heads)"
-  [h init limitf maxf]
-  (->> (roots h init limitf maxf)
+and maximal emissions reduction rate (correspondingly) at a given point. Applies
+candidate? to filter nodes for which, with certainty, there are no feasible
+paths containing them. Returns graph structure represented by the number of
+nodes at each time step (:level-size), node labels (:gross and :abated),
+number of edges coming to a node (:layer-size), head indexes (:heads)"
+  [h init limitf maxf candidate?]
+  (->> (roots h init limitf maxf candidate?)
        (iterate
         (fn [[t terminal-points pre-graph]]
-          (->> (next-level-many t terminal-points h limitf maxf)
+          (->> (next-level-many t terminal-points h limitf maxf candidate?)
                ((juxt first #(append % pre-graph)))
                (apply vector (inc t)))))
        (map last)))

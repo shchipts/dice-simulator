@@ -29,31 +29,37 @@
                                      (real= q qq)))
                               coll)
                       first
-                      last)))]
+                      last)))
+          f3 (fn [t pre-e cur-e] (identity true))]
 
       (; Act
        let [out1 (graph 2
                         {:emitted 3.5 :abated 0.388889}
                         (f1 3.5 0.388889 [2 2])
-                        (f2 [[3.5 0.388889 2 2.1]]))
+                        (f2 [[3.5 0.388889 2 2.1]])
+                        f3)
             out2 (graph 0.1
                         {:emitted 3.5 :abated 0.93038}
                         (f1 3.5 0.93038 [1.05 1.12])
                         (f2 [[3.5 0.93038 1 0.29]
-                             [3.5 0.93038 1.1 0.38]]))
+                             [3.5 0.93038 1.1 0.38]])
+                        f3)
             out3 (graph 3
                         {:emitted 3.5 :abated 0.875}
                         (f1 3.5 0.875 [6 9])
                         (f2 [[3.5 0.875 6 0.2]
-                             [3.5 0.875 9 0.2]]))
+                             [3.5 0.875 9 0.2]])
+                        f3)
             out4 (graph 1
                         {:emitted 3.5 :abated -7}
                         (f1 3.5 -7 [1.5 1.5])
-                        (f2 [[3.5 -7 1 3]]))
+                        (f2 [[3.5 -7 1 3]])
+                        f3)
             out5 (graph 0.15
                         {:emitted 3.5 :abated 0.388889}
                         (f1 3.5 0.388889 [2 2])
-                        (f2 [[3.5 0.388889 1.95 0]]))]
+                        (f2 [[3.5 0.388889 1.95 0]])
+                        f3)]
 
         ; Assert
         (is (= (first out1)
@@ -114,7 +120,8 @@
                               (real= q qq)))
                        coll)
                       first
-                      last)))]
+                      last)))
+          f3 (fn [t pre-e cur-e] (identity true))]
 
       (; Act
        let [out1 (graph 1
@@ -132,7 +139,8 @@
                              [2 4 0 5 0.2]
                              [3 5 0 2 1.6]
                              [3 4 1 2 0.2]
-                             [3 4 1 3 0.4]]))
+                             [3 4 1 3 0.4]])
+                        f3)
             out2 (graph 0.5
                         {:emitted 2 :abated 2}
                         (f1 [[0 2 2 [2 2]]
@@ -142,7 +150,8 @@
                         (f2 [[0 2 2 2 1]
                              [1 1 1 1 1]
                              [1 0.5 1.5 1 1]
-                             [1 0 2 1 1]]))
+                             [1 0 2 1 1]])
+                        f3)
             out3 (graph 1
                         {:emitted 3.5 :abated 0}
                         (f1 [[0 3.5 0 [2 3]]
@@ -158,7 +167,8 @@
                              [2 4 0 5 0.2]
                              [3 5 0 2 1.6]
                              [3 4 1 2 0]
-                             [3 4 1 3 0]]))
+                             [3 4 1 3 0]])
+                        f3)
             out4 (graph 0.5
                         {:emitted 2 :abated 2}
                         (f1 [[0 2 2 [2 2]]
@@ -168,7 +178,8 @@
                         (f2 [[0 2 2 2 1]
                              [1 1 1 1 1]
                              [1 0.5 1.5 1 0.74]
-                             [1 0 2 1 1]]))
+                             [1 0 2 1 1]])
+                        f3)
             out5 (graph 0.5
                         {:emitted 2 :abated 2}
                         (f1 [[0 2 2 [2 2]]
@@ -178,7 +189,8 @@
                         (f2 [[0 2 2 2 1]
                              [1 1 1 1 1]
                              [1 0.5 1.5 1 1]
-                             [1 0 2 1 1]]))]
+                             [1 0 2 1 1]])
+                        f3)]
 
         ; Assert
         (is (= (first (drop 3 out1))
@@ -215,6 +227,78 @@
                 :abated [2 3 4 1 2]
                 :layer-size [1 2]
                 :heads [1 1 3]}))))))
+
+(deftest include-only-feasible-nodes
+  (testing "check whether node can be included in some path"
+    (; Arrange
+     let [f1 (fn [coll]
+               (fn [t x y]
+                 (->> (filter
+                       (fn [[tt xx yy z]]
+                         (and (= t tt)
+                              (real= x xx)
+                              (real= y yy)))
+                       coll)
+                      first
+                      last)))
+          f2 (fn [coll]
+               (fn [t x y q]
+                 (->> (filter
+                       (fn [[tt xx yy qq z]]
+                         (and (= t tt)
+                              (real= x xx)
+                              (real= y yy)
+                              (real= q qq)))
+                       coll)
+                      first
+                      last)))]
+
+      (; Act
+       let [out1 (graph 2
+                        {:emitted 3.5 :abated 0.388889}
+                        (f1 [[0 3.5 0.388889 [2 2]]])
+                        (f2 [[0 3.5 0.388889 2 2.1]])
+                        (fn [t pre-emitted cur-emitted]
+                          (not
+                           (and (zero? 0)
+                                (real= pre-emitted 3.5)
+                                (real= cur-emitted 0)))))
+            out2 (graph 1
+                        {:emitted 3.5 :abated 0}
+                        (f1 [[0 3.5 0 [2 3]]
+                             [1 2 0 [4 4]]
+                             [1 3 0 [4 4]]
+                             [2 4 0 [5 5]]
+                             [3 5 0 [2 2]]
+                             [3 4 1 [2 3]]])
+                        (f2 [[0 3.5 0 2 0]
+                             [0 3.5 0 3 0]
+                             [1 2 0 4 0]
+                             [1 3 0 4 0.1]
+                             [2 4 0 5 0.2]
+                             [3 5 0 2 1.6]
+                             [3 4 1 2 0.2]
+                             [3 4 1 3 0.4]])
+                        (fn [t pre-emitted cur-emitted]
+                          (not
+                           (and (= t 3)
+                                (real= pre-emitted 4)
+                                (real= cur-emitted 3)))))]
+
+        ; Assert
+        (is (= (first out1)
+               {:level-size [2]
+                :gross [1 1]
+                :abated [0 2]
+                :layer-size []
+                :heads []}))
+
+        (is (= (first (drop 3 out2))
+               {:level-size [2 1 2 5]
+                :gross [3 2 4 5 5 2 2 2 2 3]
+                :abated [0 0 0 0 1 0 1 2 3 1]
+                :layer-size [2 1 1 2 1 1 1 1]
+                :heads [1 2 3 3 4 5 4 4 4 5]}))))))
 
 (deftest traverse-single-level
   (testing "graph with one level of nodes"
@@ -299,7 +383,8 @@
 (deftest graph-test
   (testing "Construct tree:\n"
     (grid-cells)
-    (grid-paths)))
+    (grid-paths)
+    (include-only-feasible-nodes)))
 
 (deftest walk-test
   (testing "Traverse tree:\n"
