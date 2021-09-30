@@ -14,6 +14,34 @@
             [dice-simulator.compute.techno-tree :as techno-tree]
             [utilities-clj.floating-point-comparison :refer :all]))
 
+(defn- emitted
+  "Returns observed emissions value"
+  [graph v]
+  (->> (vector :gross :abated)
+       (map #(nth (get graph %) (dec v)))
+       (apply -)))
+
+(defn- inverted-u-shape?
+  "Determines whether emissions trajectory, associated with the path, is an
+inverted U-shaped curve"
+  [path graph e0]
+  (or (nil? (second path))
+      (let [cur (emitted graph (last path))]
+        (reduce
+         (fn [seed next]
+           (let [v (if (nil? (last next))
+                     (int (math/floor (techno-tree/round e0)))
+                     (emitted graph (last next)))]
+             (if (< v seed)
+               (reduced true)
+               (if (> v seed)
+                 (reduced (>= seed cur))
+                 (if (empty? next)
+                   (reduced true)
+                   v)))))
+         (emitted graph (last (butlast path)))
+         (drop 2 (iterate butlast path))))))
+
 (defn emissions-tree
   "Returns a sampled graph of temporal emissions where node values satisfy
  constraints on feasible economic growth, feasible speed of decarbonization
@@ -97,3 +125,27 @@ head indexes (:heads)"
                        (get-path pre-peak-growth cur-emitted 1)
                        (+ (get-pre-path t))
                        insert-and-compare))))))))
+
+(defn emissions-paths
+  "Traverses all paths to the terminal level of a graph. Includes only paths
+that satisfy cumulative emissions constraint and constraint on the inverted
+U-shaped emissions curve (optional)"
+  ([graph h init parameters constraints]
+   (emissions-paths graph h init parameters constraints false))
+  ([graph h {e0 :industrial-emissions} {z :time-step} constraints u-shape?]
+   (let [{{{cummax :maximum}
+           :cumulative-emissions}
+          :industrial-emissions} constraints]
+     (techno-tree/walk
+      graph
+      (fn [path]
+        (and (or (not u-shape?)
+                 (inverted-u-shape? path graph e0))
+             (-> (reduce
+                  (fn [seed v]
+                    (+ seed (emitted graph v)))
+                  0
+                  path)
+                 (* h z)
+                 (+ (* e0 z))
+                 (real<= cummax))))))))

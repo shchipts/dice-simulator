@@ -408,6 +408,33 @@
                [1 3 4 9]
                [2 3 4 9]))))))
 
+(deftest traverse-only-feasible-paths
+  (testing "graph with only feasible paths"
+    (; Act
+     let [paths1 (walk {:level-size [3]
+                        :gross [1 1 1]
+                        :abated [0 1 2]
+                        :layer-size []
+                        :heads []}
+                       (fn [path] (not= 3 (first path))))
+          paths2 (walk {:level-size [2 1 2 3]
+                        :gross [3 2 4 5 5 2 2 2]
+                        :abated [0 0 2 0 4 0 1 2]
+                        :layer-size [2 1 1 2 1 1]
+                        :heads [1 2 3 3 4 5 4 5]}
+                       (fn [path]
+                         (and (not= path [2 3 4])
+                              (not= path [1 3])
+                              (not= path [2 3 5 6]))))]
+
+      ; Assert
+      (is (= paths1
+             '([1]
+               [2])))
+
+      (is (= paths2
+             '([2 3 5 8]))))))
+
 
 ;;; test grouping
 
@@ -422,7 +449,8 @@
 (deftest walk-test
   (testing "Traverse tree:\n"
     (traverse-single-level)
-    (traverse-many-levels)))
+    (traverse-many-levels)
+    (traverse-only-feasible-paths)))
 
 
 ;;; tests in the namespace

@@ -13,7 +13,7 @@
             [utilities-clj.floating-point-comparison :refer :all]))
 
 ; from http://clojure-doc.org/articles/language/functions.html
-(defn- round
+(defn round
   "Round down a double to the set precision (number of significant digits)"
   [d]
   (let [precision 6
@@ -149,30 +149,34 @@
 
 (defn- insert-into
   "Appends nodes to paths, for which a node is terminal"
-  [paths nodes]
-  (persistent!
-   (reduce
-    (fn [seed1 node]
-      (let [sub-paths (get paths node)]
-        (if (empty? sub-paths)
-          (conj! seed1 (vector node))
-          (reduce
-           (fn [seed2 path]
-             (conj! seed2 (conj path node)))
-           seed1
-           sub-paths))))
-    (transient [])
-    nodes)))
+  [candidate? paths nodes]
+  (let [insert (fn [node seed path]
+                 (let [new-path (conj path node)]
+                   (if (candidate? new-path)
+                     (conj! seed new-path)
+                     seed)))]
+    (persistent!
+     (reduce
+      (fn [seed1 node]
+        (let [sub-paths (get paths node)]
+          (if (empty? sub-paths)
+            (insert node seed1 [])
+            (reduce
+             #(insert node %1 %2)
+             seed1
+             sub-paths))))
+      (transient [])
+      nodes))))
 
 (defn- append-paths
   "Appends nodes of next graph level to existing paths"
-  [paths layers heads]
+  [paths layers heads candidate?]
   (->> (list layers heads [])
        (iterate
         (fn [[next-layers next-heads coll]]
           (let [m (first next-layers)]
             (->> (take m next-heads)
-                 (insert-into paths)
+                 (insert-into candidate? paths)
                  (conj coll)
                  (list (rest next-layers)
                        (drop m next-heads))))))
@@ -199,24 +203,32 @@ number of edges coming to a node (:layer-size), head indexes (:heads)"
        (map last)))
 
 (defn walk
-  "Traverses all paths to the terminal level of a graph"
-  [graph]
-  (->> (initialize-paths graph)
-       (iterate
-        (fn [[levels layers heads counter paths]]
-          (let [n (first levels)
-                [level-layers m] ((juxt identity
-                                        #(apply + %))
-                                  (take n layers))]
-            (list (rest levels)
-                  (drop n layers)
-                  (drop m heads)
-                  (+ counter n)
-                  (->> (take m heads)
-                       (append-paths paths level-layers)
-                       (zipmap (range (inc counter) (inc (+ counter n)))))))))
-       (drop-while (comp seq first))
-       first
-       last
-       ((juxt identity (comp sort keys)))
-       (apply insert-into)))
+  "Traverses all paths to the terminal level of a graph. Applies
+candidate? to filter paths, which are not feasible"
+  ([graph] (walk graph (fn [path] (identity true))))
+  ([graph candidate?]
+   (->> (initialize-paths graph)
+        (iterate
+         (fn [[levels layers heads counter paths]]
+           (let [n (first levels)
+                 [level-layers m] ((juxt identity
+                                         #(apply + %))
+                                   (take n layers))]
+             (list (rest levels)
+                   (drop n layers)
+                   (drop m heads)
+                   (+ counter n)
+                   (->> (take m heads)
+                        (#(append-paths paths level-layers % candidate?))
+                        (map vector (range (inc counter) (inc (+ counter n))))
+                        (reduce
+                         (fn [seed [k v]]
+                           (if (empty? v)
+                             seed
+                             (assoc seed k v)))
+                         {}))))))
+        (drop-while (comp seq first))
+        first
+        last
+        ((juxt identity (comp sort keys)))
+        (apply insert-into candidate?))))

@@ -173,6 +173,67 @@
                 :layer-size []
                 :heads []}))))))
 
+(deftest emissions-paths-test
+  (testing "emissions tree traversal with cumulative emissions constraint and
+optional inverted U-shaped emissions curve constraint"
+    (; Act
+     let [paths1 (emissions-paths {:level-size [2 1 2 3]
+                                   :gross [3 2 4 5 5 2 2 2]
+                                   :abated [0 0 2 0 4 0 1 2]
+                                   :layer-size [2 1 1 2 1 1]
+                                   :heads [1 2 3 3 4 5 4 5]}
+                                  2
+                                  {:industrial-emissions 1.0}
+                                  {:time-step 5}
+                                  {:industrial-emissions
+                                   {:cumulative-emissions {:maximum 84.99}}}
+                                  true)
+          paths2 (emissions-paths {:level-size [3 2 2 2]
+                                   :gross [3 2 1 4 4 5 5 2 2]
+                                   :abated [0 0 0 0 2 0 4 0 1]
+                                   :layer-size [1 3 2 2 2 2]
+                                   :heads [1 1 2 3 4 5 4 5 6 7 6 7]}
+                                  1
+                                  {:industrial-emissions 2.0}
+                                  {:time-step 1}
+                                  {:industrial-emissions
+                                   {:cumulative-emissions {:maximum 20}}}
+                                  true)
+          paths3 (emissions-paths {:level-size [3 2 2 2]
+                                   :gross [3 2 1 4 4 5 5 2 2]
+                                   :abated [0 0 0 0 2 0 4 0 1]
+                                   :layer-size [1 3 2 2 2 2]
+                                   :heads [1 1 2 3 4 5 4 5 6 7 6 7]}
+                                  1
+                                  {:industrial-emissions 2.0}
+                                  {:time-step 1}
+                                  {:industrial-emissions
+                                   {:cumulative-emissions {:maximum 11}}})]
+
+      ; Assert
+      (is (= paths1
+             '([1 3 5 8]
+               [2 3 5 8])))
+
+      (is (= paths2
+             '([1 4 6 8]
+               [2 5 6 8]
+               [1 4 6 9]
+               [2 5 6 9]
+               [1 4 7 9]
+               [1 5 7 9]
+               [2 5 7 9])))
+
+      (is (= paths3
+             '([1 5 7 8]
+               [2 5 7 8]
+               [3 5 7 8]
+               [3 5 6 9]
+               [1 4 7 9]
+               [1 5 7 9]
+               [2 5 7 9]
+               [3 5 7 9]))))))
+
 
 ;;; test grouping
 
@@ -191,4 +252,5 @@
 (defn test-ns-hook
   "Explicit definition of tests in the namespace"
   []
-  (emissions-tree-test))
+  (emissions-tree-test)
+  (emissions-paths-test))
