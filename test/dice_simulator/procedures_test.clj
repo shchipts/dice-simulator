@@ -234,6 +234,35 @@ optional inverted U-shaped emissions curve constraint"
                [2 5 7 9]
                [3 5 7 9]))))))
 
+(deftest emissions-growth-constraint
+  (testing ""
+    (; Act
+     let [tree (emissions-tree 1
+                               {:industrial-emissions 10
+                                :reduction-rate 0}
+                               {:time-step 5
+                                :cobb-douglas {:labor [1 1]
+                                               :tfp [1 1]
+                                               :capital-elasticity 1}
+                                :depreciation-rate 0
+                                :carbon-intensity [1 1]}
+                               {:volume
+                                {:industrial-emissions
+                                 {:produced {:maximum [13]}
+                                  :emitted {:growth 2}}}
+                                :decarbonization
+                                {:pre-peak {:reduction {:growth 1}
+                                            :reduction-rate {:maximum 0.1}}
+                                 :net-zero-timing 10}})]
+
+      ; Assert
+      (is (= (first tree)
+             {:level-size [7]
+              :gross [13 12 12 11 11 10 10]
+              :abated [1 0 1 0 1 0 1]
+              :layer-size []
+              :heads []})))))
+
 
 ;;; test grouping
 
@@ -243,7 +272,8 @@ optional inverted U-shaped emissions curve constraint"
     (post-peak-decarbonization-constraints)
     (pre-peak-decarbonization-constraints)
     (investment-constraints)
-    (cummulative-emissions-constraint)))
+    (cummulative-emissions-constraint)
+    (emissions-growth-constraint)))
 
 
 ;;; tests in the namespace

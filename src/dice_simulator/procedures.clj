@@ -15,7 +15,7 @@
             [utilities-clj.floating-point-comparison :refer :all]))
 
 (defn- emitted
-  "Returns observed emissions value"
+  "Returns observed emissions value associated with a node"
   [graph v]
   (->> (vector :gross :abated)
        (map #(nth (get graph %) (dec v)))
@@ -42,10 +42,64 @@ inverted U-shaped curve"
          (emitted graph (last (butlast path)))
          (drop 2 (iterate butlast path))))))
 
+(defn- emissions-growth?
+  "Determines whether emissions growth is feasible"
+  [pre-emitted
+   cur-emitted
+   {{{{emitted-growth :growth} :emitted}
+     :industrial-emissions}
+    :volume}]
+  (or (nil? emitted-growth)
+      (real<= (- cur-emitted
+                 pre-emitted)
+              emitted-growth)))
+
+(defn- cumulative-emissions?
+  "Determines whether there can exist a path with specified emissions
+satisfying cumulative emissions constraint"
+  [t
+   pre-emitted
+   cur-emitted
+   e0
+   {z :time-step}
+   {{peak-t :net-zero-timing
+     {{pre-peak-growth :growth} :reduction} :pre-peak}
+    :decarbonization
+    {{{cummax :maximum} :cumulative-emissions
+      {emitted-growth :growth} :emitted} :industrial-emissions}
+    :volume}]
+  (let [get-path (fn [growth from start end]
+                   (->> (range start end)
+                        (reduce
+                         (fn [seed k]
+                           (let [v (- from (* k growth))]
+                             (if (pos? v)
+                               (conj seed v)
+                               (reduced seed))))
+                         [])
+                        (apply +)))
+        get-pre-path (fn [end] (get-path pre-peak-growth e0 0 end))
+        insert-and-compare
+        (fn [v]
+          (->> (+ v pre-emitted cur-emitted)
+               (* z)
+               (real>= cummax)))]
+    (or (nil? cummax)
+        (and (> (inc t) peak-t)
+             (insert-and-compare (get-pre-path peak-t)))
+        (and (< t peak-t)
+             (>= t (dec (dec peak-t)))
+             (insert-and-compare (get-pre-path t)))
+        (and (< (inc t) (dec peak-t))
+             (->> (- peak-t (inc t))
+                  (get-path pre-peak-growth cur-emitted 1)
+                  (+ (get-pre-path t))
+                  insert-and-compare)))))
+
 (defn emissions-tree
   "Returns a sampled graph of temporal emissions where node values satisfy
  constraints on feasible economic growth, feasible speed of decarbonization
-and feasible cummulative emissions. Returned value represents graph structure
+and feasible cumulative emissions. Returned value represents graph structure
 by the number of nodes at each time step (:level-size), node labels
 (:gross and :abated), number of edges coming to a node (:layer-size) and
 head indexes (:heads)"
@@ -91,40 +145,18 @@ head indexes (:heads)"
               (- 1)
               (* (:growth-rate post-peak-rate))
               (min (:maximum post-peak-rate))))))
-   (let [{z :time-step} parameters
-         {{peak-t :net-zero-timing
-           {{pre-peak-growth :growth} :reduction} :pre-peak}
-          :decarbonization
-          {{{cummax :maximum} :cumulative-emissions} :industrial-emissions}
-          :volume} constraints
-         get-path (fn [growth from start end]
-                    (->> (range start end)
-                         (reduce
-                          (fn [seed k]
-                            (let [v (- from (* k growth))]
-                              (if (pos? v)
-                                (conj seed v)
-                                (reduced seed))))
-                          [])
-                         (apply +)))
-         get-pre-path (fn [end] (get-path pre-peak-growth e0 0 end))]
-     (fn [t pre-emitted cur-emitted]
-       (let [insert-and-compare
-             (fn [v]
-               (->> (+ v pre-emitted cur-emitted)
-                    (* z)
-                    (real>= cummax)))]
-         (or (nil? cummax)
-             (and (> (inc t) peak-t)
-                  (insert-and-compare (get-pre-path peak-t)))
-             (and (< t peak-t)
-                  (>= t (dec (dec peak-t)))
-                  (insert-and-compare (get-pre-path t)))
-             (and (< (inc t) (dec peak-t))
-                  (->> (- peak-t (inc t))
-                       (get-path pre-peak-growth cur-emitted 1)
-                       (+ (get-pre-path t))
-                       insert-and-compare))))))))
+   (fn [t pre-emitted cur-emitted]
+     (and (emissions-growth?
+           pre-emitted
+           cur-emitted
+           constraints)
+          (cumulative-emissions?
+           t
+           pre-emitted
+           cur-emitted
+           e0
+           parameters
+           constraints)))))
 
 (defn emissions-paths
   "Traverses all paths to the terminal level of a graph. Includes only paths
@@ -132,20 +164,22 @@ that satisfy cumulative emissions constraint and constraint on the inverted
 U-shaped emissions curve (optional)"
   ([graph h init parameters constraints]
    (emissions-paths graph h init parameters constraints false))
-  ([graph h {e0 :industrial-emissions} {z :time-step} constraints u-shape?]
-   (let [{{{cummax :maximum}
-           :cumulative-emissions}
-          :industrial-emissions} constraints]
-     (techno-tree/walk
-      graph
-      (fn [path]
-        (and (or (not u-shape?)
-                 (inverted-u-shape? path graph e0))
-             (-> (reduce
-                  (fn [seed v]
-                    (+ seed (emitted graph v)))
-                  0
-                  path)
-                 (* h z)
-                 (+ (* e0 z))
-                 (real<= cummax))))))))
+  ([graph
+    h
+    {e0 :industrial-emissions}
+    {z :time-step}
+    {{{cummax :maximum} :cumulative-emissions} :industrial-emissions}
+    u-shape?]
+   (techno-tree/walk
+    graph
+    (fn [path]
+      (and (or (not u-shape?)
+               (inverted-u-shape? path graph e0))
+           (-> (reduce
+                (fn [seed v]
+                  (+ seed (emitted graph v)))
+                0
+                path)
+               (* h z)
+               (+ (* e0 z))
+               (real<= cummax)))))));)
