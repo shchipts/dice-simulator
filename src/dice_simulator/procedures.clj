@@ -42,17 +42,16 @@ inverted U-shaped curve"
          (emitted graph (last (butlast path)))
          (drop 2 (iterate butlast path))))))
 
-(defn- emissions-growth?
-  "Determines whether emissions growth is feasible"
-  [pre-emitted
-   cur-emitted
-   {{{{emitted-growth :growth} :emitted}
-     :industrial-emissions}
-    :volume}]
-  (or (nil? emitted-growth)
-      (real<= (- cur-emitted
-                 pre-emitted)
-              emitted-growth)))
+(defn- max-produced
+  "Determines upper bound on produced emissions"
+  [t pre-emitted pre-abated emax egrowth]
+  (#(if (nil? egrowth)
+      %
+      (min %
+           (+ pre-emitted
+              pre-abated
+              egrowth)))
+    (nth emax t)))
 
 (defn- cumulative-emissions?
   "Determines whether there can exist a path with specified emissions
@@ -114,7 +113,8 @@ head indexes (:heads)"
           {labor :labor tfp :tfp a :capital-elasticity} :cobb-douglas
           d :depreciation-rate
           z :time-step} parameters
-         {{{{emax :maximum} :produced} :industrial-emissions}
+         {{{{emax :maximum
+             egrowth :growth} :produced} :industrial-emissions}
           :volume} constraints
          divf (fn [t coll]
                 (->> ((juxt inc identity) t)
@@ -127,7 +127,8 @@ head indexes (:heads)"
                        (math/expt (divf t labor) (- 1 a))
                        (math/expt (- 1 d) (* a z))
                        %)
-                   (fn [_] (nth emax t)))))))
+                   (fn [_]
+                     (max-produced t pre-emitted pre-abated emax egrowth)))))))
    (let [{{peak-t :net-zero-timing
            {pre-peak-reduction :reduction
             pre-peak-rate :reduction-rate} :pre-peak
@@ -146,17 +147,13 @@ head indexes (:heads)"
               (* (:growth-rate post-peak-rate))
               (min (:maximum post-peak-rate))))))
    (fn [t pre-emitted cur-emitted]
-     (and (emissions-growth?
-           pre-emitted
-           cur-emitted
-           constraints)
-          (cumulative-emissions?
-           t
-           pre-emitted
-           cur-emitted
-           e0
-           parameters
-           constraints)))))
+     (cumulative-emissions?
+      t
+      pre-emitted
+      cur-emitted
+      e0
+      parameters
+      constraints))))
 
 (defn emissions-paths
   "Traverses all paths to the terminal level of a graph. Includes only paths
