@@ -39,8 +39,10 @@
              {:level-size [2 2]
               :gross [4 4 4 4]
               :abated [2 3 2 3]
-              :layer-size [1 2]
-              :heads [1 1 2]})))))
+              :edges {1 []
+                      2 []
+                      3 [1]
+                      4 [1 2]}})))))
 
 (deftest pre-peak-decarbonization-constraints
   (testing "constraints on speed of decarbonization before peak warming"
@@ -67,8 +69,13 @@
              {:level-size [3 4]
               :gross [20 20 20 20 20 20 20]
               :abated [10 11 12 10 11 12 13]
-              :layer-size [1 2 3 2]
-              :heads [1 1 2 1 2 3 2 3]})))))
+              :edges {1 []
+                      2 []
+                      3 []
+                      4 [1]
+                      5 [1 2]
+                      6 [1 2 3]
+                      7 [2 3]}})))))
 
 (deftest investment-constraints
   (testing "constraints on emissions produced by world economy"
@@ -95,8 +102,10 @@
              {:level-size [1 3]
               :gross [7 6 6 5]
               :abated [1 0 1 0]
-              :layer-size [1 1 1]
-              :heads [1 1 1]})))))
+              :edges {1 []
+                      2 [1]
+                      3 [1]
+                      4 [1]}})))))
 
 (deftest cummulative-emissions-constraint
   (testing "check cumulative emissions constraints"
@@ -134,44 +143,46 @@
                {:level-size [1 1 1 1 0 0]
                 :gross [2 2 2 2]
                 :abated [0 0 0 0]
-                :layer-size [1 1 1]
-                :heads [1 2 3]}))
+                :edges {1 []
+                        2 [1]
+                        3 [2]
+                        4 [3]}}))
         (is (= (first (drop 5 tree2))
                {:level-size [1 1 1 0 0 0]
                 :gross [2 2 2]
                 :abated [0 0 0]
-                :layer-size [1 1]
-                :heads [1 2]}))
+                :edges {1 []
+                        2 [1]
+                        3 [2]}}))
         (is (= (first (drop 5 tree3))
                {:level-size [1 1 0 0 0 0]
                 :gross [2 2]
                 :abated [0 0]
-                :layer-size [1]
-                :heads [1]}))
+                :edges {1 []
+                        2 [1]}}))
         (is (= (first (drop 6 tree4))
                {:level-size [1 1 1 0 0 0 0]
                 :gross [2 2 2]
                 :abated [0 0 0]
-                :layer-size [1 1]
-                :heads [1 2]}))
+                :edges {1 []
+                        2 [1]
+                        3 [2]}}))
         (is (= (first (drop 2 tree5))
                {:level-size [1 0 0]
                 :gross [2]
                 :abated [0]
-                :layer-size []
-                :heads []}))
+                :edges {1 []}}))
         (is (= (first (drop 2 tree6))
                {:level-size [1 1 0]
                 :gross [2 2]
                 :abated [0 0]
-                :layer-size [1]
-                :heads [1]}))
+                :edges {1 []
+                        2 [1]}}))
         (is (= (first (drop 1 tree7))
                {:level-size [1 0]
                 :gross [2]
                 :abated [0]
-                :layer-size []
-                :heads []}))))))
+                :edges {1 []}}))))))
 
 (deftest emissions-paths-test
   (testing "emissions tree traversal with cumulative emissions constraint and
@@ -261,8 +272,13 @@ optional inverted U-shaped emissions curve constraint"
              {:level-size [3 4]
               :gross [3 2 1 4 3 2 1]
               :abated [0 0 0 0 0 0 0]
-              :layer-size [2 3 2 1]
-              :heads [1 2 1 2 3 2 3 3]})))))
+              :edges {1 []
+                      2 []
+                      3 []
+                      4 [1 2]
+                      5 [1 2 3]
+                      6 [2 3]
+                      7 [3]}})))))
 
 
 ;;; test grouping

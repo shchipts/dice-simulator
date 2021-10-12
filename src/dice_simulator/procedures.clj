@@ -51,7 +51,7 @@ inverted U-shaped curve"
            (+ pre-emitted
               pre-abated
               egrowth)))
-    (nth emax t)))
+   (nth emax t)))
 
 (defn- cumulative-emissions?
   "Determines whether there can exist a path with specified emissions
@@ -97,11 +97,12 @@ satisfying cumulative emissions constraint"
 
 (defn emissions-tree
   "Returns a sampled graph of temporal emissions where node values satisfy
- constraints on feasible economic growth, feasible speed of decarbonization
-and feasible cumulative emissions. Returned value represents graph structure
-by the number of nodes at each time step (:level-size), node labels
-(:gross and :abated), number of edges coming to a node (:layer-size) and
-head indexes (:heads)"
+ constraints on feasible economic growth, feasible speed of decarbonization,
+feasible produced emissions growth and feasible cumulative emissions. Returned
+value represents graph structure by the number of nodes at each time step
+(:level-size), node labels (:gross and :abated) and by the adjacency list which
+associates each node with the collection of its ancestor nodes in the graph
+(:edges)"
   [h {e0 :industrial-emissions mu0 :reduction-rate} parameters constraints]
   (techno-tree/graph
    h

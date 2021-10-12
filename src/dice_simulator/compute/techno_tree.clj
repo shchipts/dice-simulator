@@ -91,29 +91,28 @@
 (defn- append
   "Appends new level specified by points and edges to a preexisting graph"
   [[points edges] pre-graph]
-  (let [idx0 (->> (:level-size pre-graph)
-                  ((juxt #(apply + %) last))
-                  (apply -))]
-    (->> (reduce-kv
-          (fn [[gross abated layers ends] point idx1]
+  (->> (let [idx1 (apply + (:level-size pre-graph))
+             idx0 (- idx1 (last (:level-size pre-graph)))]
+         (reduce-kv
+          (fn [[gross abated struct] point head]
             (list (conj! gross (first point))
                   (conj! abated (second point))
-                  (conj! layers (count (get edges idx1)))
-                  (reduce
-                   (fn [seed idx2]
-                     (conj! seed (+ idx0 idx2)))
-                   ends
-                   (get edges idx1))))
+                  (->> (get edges head)
+                       (reduce
+                        (fn [seed end]
+                          (conj! seed (+ idx0 end)))
+                        (transient []))
+                       persistent!
+                       (assoc! struct (+ idx1 head)))))
           (map #(transient (get pre-graph %))
-               [:gross :abated :layer-size :heads])
-          points)
-         (map persistent!)
-         (#(conj % (conj (:level-size pre-graph) (count points))))
-         (zipmap [:level-size
-                  :gross
-                  :abated
-                  :layer-size
-                  :heads]))))
+               [:gross :abated :edges])
+          points))
+       (map persistent!)
+       (#(conj % (conj (:level-size pre-graph) (count points))))
+       (zipmap [:level-size
+                :gross
+                :abated
+                :edges])))
 
 (defn- roots
   "Determines root nodes in a forest"
@@ -125,12 +124,19 @@
                   (map inc)
                   (zipmap points)))
            (fn [points]
-             (->> ((juxt #(vector (count %))
-                         #(vec (map first %))
-                         #(vec (map second %)))
-                   points)
-                  (zipmap [:level-size :gross :abated])
-                  (merge {:layer-size [] :heads []}))))
+             (zipmap [:level-size
+                      :gross
+                      :abated
+                      :edges]
+                     ((juxt #(vector (count %))
+                            #(vec (map first %))
+                            #(vec (map second %))
+                            #(->> (count %)
+                                  inc
+                                  (range 1)
+                                  ((fn [ks]
+                                     (zipmap ks (repeat []))))))
+                      points))))
      (next-level t h [e0 e0_] limitf maxf candidate?))))
 
 (defn- initialize-paths
@@ -191,8 +197,9 @@ equal to h. Applies limitf and maxf to determine gross emissions value domain
 and maximal emissions reduction rate (correspondingly) at a given point. Applies
 candidate? to filter nodes for which, with certainty, there are no feasible
 paths containing them. Returns graph structure represented by the number of
-nodes at each time step (:level-size), node labels (:gross and :abated),
-number of edges coming to a node (:layer-size), head indexes (:heads)"
+nodes at each time step (:level-size), node labels (:gross and :abated) and by
+the adjacency list which associates each node with the collection of its
+ancestor nodes in the graph (:edges)"
   [h init limitf maxf candidate?]
   (->> (roots h init limitf maxf candidate?)
        (iterate

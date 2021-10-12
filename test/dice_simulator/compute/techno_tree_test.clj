@@ -66,36 +66,38 @@
                {:level-size [3]
                 :gross [1 1 1]
                 :abated [0 1 2]
-                :layer-size []
-                :heads []}))
+                :edges {1 []
+                        2 []
+                        3 []}}))
 
         (is (= (first out2)
                {:level-size [4]
                 :gross [11 11 11 10]
                 :abated [2 3 4 2]
-                :layer-size []
-                :heads []}))
+                :edges {1 []
+                        2 []
+                        3 []
+                        4 []}}))
 
         (is (= (first out3)
                {:level-size [2]
                 :gross [3 2]
                 :abated [0 0]
-                :layer-size []
-                :heads []}))
+                :edges {1 []
+                        2 []}}))
 
         (is (= (first out4)
                {:level-size [2]
                 :gross [1 1]
                 :abated [2 3]
-                :layer-size []
-                :heads []}))
+                :edges {1 []
+                        2 []}}))
 
         (is (= (first out5)
                {:level-size [0]
                 :gross []
                 :abated []
-                :layer-size []
-                :heads []}))))))
+                :edges {}}))))))
 
 (deftest grid-paths
   (testing "tree with several levels"
@@ -197,36 +199,61 @@
                {:level-size [2 1 2 6]
                 :gross [3 2 4 5 5 2 2 2 2 3 3]
                 :abated [0 0 0 0 1 0 1 2 3 0 1]
-                :layer-size [2 1 1 2 1 1 1 1 1]
-                :heads [1 2 3 3 4 5 4 4 4 5 5]}))
+                :edges {1 []
+                        2 []
+                        3 [1 2]
+                        4 [3]
+                        5 [3]
+                        6 [4 5]
+                        7 [4]
+                        8 [4]
+                        9 [4]
+                        10 [5]
+                        11 [5]}}))
 
         (is (= (first (drop 1 out2))
                {:level-size [3 2]
                 :gross [4 4 4 2 2]
                 :abated [2 3 4 1 2]
-                :layer-size [2 3]
-                :heads [1 2 1 2 3]}))
+                :edges {1 []
+                        2 []
+                        3 []
+                        4 [1 2]
+                        5 [1 2 3]}}))
 
         (is (= (first (drop 3 out3))
                {:level-size [2 1 2 4]
                 :gross [3 2 4 5 5 2 2 2 2]
                 :abated [0 0 0 0 1 0 1 2 3]
-                :layer-size [2 1 1 1 1 1 1]
-                :heads [1 2 3 3 4 4 4 4]}))
+                :edges {1 []
+                        2 []
+                        3 [1 2]
+                        4 [3]
+                        5 [3]
+                        6 [4]
+                        7 [4]
+                        8 [4]
+                        9 [4]}}))
 
         (is (= (first (drop 1 out4))
                {:level-size [3 2]
                 :gross [4 4 4 2 2]
                 :abated [2 3 4 1 2]
-                :layer-size [1 2]
-                :heads [1 1 3]}))
+                :edges {1 []
+                        2 []
+                        3 []
+                        4 [1]
+                        5 [1 3]}}))
 
         (is (= (first (drop 1 out5))
                {:level-size [3 2]
                 :gross [4 4 4 2 2]
                 :abated [2 3 4 1 2]
-                :layer-size [1 2]
-                :heads [1 1 3]}))))))
+                :edges {1 []
+                        2 []
+                        3 []
+                        4 [1]
+                        5 [1 3]}}))))))
 
 (deftest grid-rounding
   (testing "produced emissions can take only positive values on a grid"
@@ -257,8 +284,11 @@
                {:level-size [2 3]
                 :gross [1 1 2 2 2]
                 :abated [0 1 0 1 2]
-                :layer-size [1 1 2]
-                :heads [1 1 1 2]}))))))
+                :edges {1 []
+                        2 []
+                        3 [1]
+                        4 [1]
+                        5 [1 2]}}))))))
 
 (deftest include-only-feasible-nodes
   (testing "check whether node can be included in some path"
@@ -322,15 +352,23 @@
                {:level-size [2]
                 :gross [1 1]
                 :abated [0 2]
-                :layer-size []
-                :heads []}))
+                :edges {1 []
+                        2 []}}))
 
         (is (= (first (drop 3 out2))
                {:level-size [2 1 2 5]
                 :gross [3 2 4 5 5 2 2 2 2 3]
                 :abated [0 0 0 0 1 0 1 2 3 1]
-                :layer-size [2 1 1 2 1 1 1 1]
-                :heads [1 2 3 3 4 5 4 4 4 5]}))))))
+                :edges {1 []
+                        2 []
+                        3 [1 2]
+                        4 [3]
+                        5 [3]
+                        6 [4 5]
+                        7 [4]
+                        8 [4]
+                        9 [4]
+                        10 [5]}}))))))
 
 (deftest traverse-single-level
   (testing "graph with one level of nodes"
