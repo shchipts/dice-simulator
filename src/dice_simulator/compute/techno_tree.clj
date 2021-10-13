@@ -239,3 +239,73 @@ candidate? to filter paths, which are not feasible"
         last
         ((juxt identity (comp sort keys)))
         (apply insert-into candidate?))))
+
+(defn- inner-right
+  "Returns the greatest subpath, where path contains all nodes of the subpath
+apart from the end node. If no subpath exists, returns an empty vector."
+  [edges path]
+  (->> (reverse path)
+       ((juxt rest drop-last))
+       (apply
+        reduce
+        (fn [rest-path node]
+          (->> (first rest-path)
+               (get edges)
+               (drop-while #(not= % node))
+               second
+               (#(if (nil? %)
+                   (rest rest-path)
+                   (->> (conj rest-path %)
+                        reverse
+                        vec
+                        reduced))))))
+       (#(if (seq %) % []))))
+
+(defn- left
+  "Returns a full path which is the most left in a graph among all full paths
+located from the right of pre-path (including paths starting from pre-path).
+A full path starts from a terminal node and ends at a root node of a graph.
+Applies candidate? to check whether a subpath can be a part of a feasible path,
+where subpath starts from a terminal node and ends at any node of a graph
+(including a root). By assumption, if a subpath is not feasible, then it follows
+that all subpaths, which have identical nodes apart from the end node, are also
+not feasible."
+  [edges candidate? terminal-nodes pre-path]
+  (if (empty? pre-path)
+    (if (seq terminal-nodes)
+      (let [path (vec (take 1 terminal-nodes))]
+        (if (candidate? path)
+          (recur edges candidate? (rest terminal-nodes) path))))
+    (let [node (->> (last pre-path)
+                    (get edges)
+                    first)]
+      (if (nil? node)
+        [pre-path terminal-nodes]
+        (let [path (conj pre-path node)]
+          (if (candidate? path)
+            (recur edges candidate? terminal-nodes path)
+            (recur edges
+                   candidate?
+                   terminal-nodes
+                   (inner-right edges pre-path))))))))
+
+(defn walk2
+  "Returns a lazy sequence containg all paths from roots to terminal nodes
+of a graph. Performs graph traversal starting from terminal nodes and returns
+each obtained path in its reverse order. Applies candidate? to check whether a
+subpath can be a part of a feasible path, where subpath starts from a terminal
+node and ends at any node of a graph (including a root)."
+  [{levels :level-size edges :edges} candidate?]
+  (->> ((juxt #(apply + %) last) levels)
+       ((juxt #(apply - %) first))
+       (map inc)
+       (apply range)
+       (#(left edges candidate? % []))
+       (iterate
+        (fn [[prev-path terminal-nodes]]
+          (left edges
+                candidate?
+                terminal-nodes
+                (inner-right edges prev-path))))
+       (take-while seq)
+       (map (comp reverse first))))

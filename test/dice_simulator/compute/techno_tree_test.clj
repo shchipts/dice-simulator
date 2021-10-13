@@ -473,6 +473,158 @@
       (is (= paths2
              '([2 3 5 8]))))))
 
+(deftest traverse-without-conditions
+  (testing "traverse all paths to terminal nodes"
+    (; Act
+     let [paths1 (walk2 {:level-size [3 5 2 4 3]
+                         :edges {1 [] 2 [] 3 []
+                                 4 [1] 5 [1 3] 6 [2] 7 [3] 8 [2]
+                                 9 [4 6 7] 10 [5 6]
+                                 11 [9] 12 [9 10] 13 [10] 14 [10]
+                                 15 [11] 16 [11 14] 17 [12 14]}}
+                        (fn [path] (identity true)))
+          paths2 (walk2 {:level-size [3 5 2 4 3]
+                         :edges {1 [] 2 [] 3 []
+                                 4 [1] 5 [1 3] 6 [2] 7 [3] 8 [2]
+                                 9 [6] 10 [6]
+                                 11 [9] 12 [9 10] 13 [10] 14 [10]
+                                 15 [11] 16 [11] 17 [14]}}
+                        (fn [path] (identity true)))
+          paths3 (walk2 {:level-size [3]
+                         :edges {}}
+                        (fn [path] (identity true)))
+          paths4 (walk2 {:level-size [0]
+                         :edges {}}
+                        (fn [path] (identity true)))]
+
+      ; Assert
+      (is (= paths1
+             '([1 4 9 11 15]
+               [2 6 9 11 15]
+               [3 7 9 11 15]
+               [1 4 9 11 16]
+               [2 6 9 11 16]
+               [3 7 9 11 16]
+               [1 5 10 14 16]
+               [3 5 10 14 16]
+               [2 6 10 14 16]
+               [1 4 9 12 17]
+               [2 6 9 12 17]
+               [3 7 9 12 17]
+               [1 5 10 12 17]
+               [3 5 10 12 17]
+               [2 6 10 12 17]
+               [1 5 10 14 17]
+               [3 5 10 14 17]
+               [2 6 10 14 17])))
+      (is (= paths2
+             '([2 6 9 11 15]
+               [2 6 9 11 16]
+               [2 6 10 14 17])))
+      (is (= paths3
+             '([1]
+               [2]
+               [3])))
+      (is (= paths4
+             '())))))
+
+(deftest traverse-conditional
+  (testing "traverse all feasible paths to terminal nodes"
+    (; Arrange
+     let [tree {:level-size [3 5 2 4 3]
+                :edges {1 [] 2 [] 3 []
+                        4 [1] 5 [1 3] 6 [2] 7 [3] 8 [2]
+                        9 [4 6 7] 10 [5 6]
+                        11 [9] 12 [9 10] 13 [10] 14 [10]
+                        15 [11] 16 [11 14] 17 [12 14]}}]
+
+      (; Act
+       let [paths1 (walk2 tree #(not= % [15 11 9 4 1]))
+            paths2 (walk2 tree #(and (not= % [17 12 10 5 1])
+                                     (not= % [17 14 10 5 1])))
+            paths3 (walk2 tree #(not= % [17 12 9 4]))
+            paths4 (walk2 tree #(and (not= % [16 14 10])
+                                     (not= % [17 14 10])))
+            paths5 (walk2 tree #(and (not= % [15 11])
+                                     (not= % [16 11])))
+            paths6 (walk2 tree #(not= % [15]))]
+
+        ; Assert
+        (is (= paths1
+               '([2 6 9 11 15]
+                 [3 7 9 11 15]
+                 [1 4 9 11 16]
+                 [2 6 9 11 16]
+                 [3 7 9 11 16]
+                 [1 5 10 14 16]
+                 [3 5 10 14 16]
+                 [2 6 10 14 16]
+                 [1 4 9 12 17]
+                 [2 6 9 12 17]
+                 [3 7 9 12 17]
+                 [1 5 10 12 17]
+                 [3 5 10 12 17]
+                 [2 6 10 12 17]
+                 [1 5 10 14 17]
+                 [3 5 10 14 17]
+                 [2 6 10 14 17])))
+        (is (= paths2
+               '([1 4 9 11 15]
+                 [2 6 9 11 15]
+                 [3 7 9 11 15]
+                 [1 4 9 11 16]
+                 [2 6 9 11 16]
+                 [3 7 9 11 16]
+                 [1 5 10 14 16]
+                 [3 5 10 14 16]
+                 [2 6 10 14 16]
+                 [1 4 9 12 17]
+                 [2 6 9 12 17]
+                 [3 7 9 12 17]
+                 [2 6 10 12 17]
+                 [2 6 10 14 17])))
+        (is (= paths3
+               '([1 4 9 11 15]
+                 [2 6 9 11 15]
+                 [3 7 9 11 15]
+                 [1 4 9 11 16]
+                 [2 6 9 11 16]
+                 [3 7 9 11 16]
+                 [1 5 10 14 16]
+                 [3 5 10 14 16]
+                 [2 6 10 14 16]
+                 [1 5 10 12 17]
+                 [3 5 10 12 17]
+                 [2 6 10 12 17]
+                 [1 5 10 14 17]
+                 [3 5 10 14 17]
+                 [2 6 10 14 17])))
+        (is (= paths4
+               '([1 4 9 11 15]
+                 [2 6 9 11 15]
+                 [3 7 9 11 15]
+                 [1 4 9 11 16]
+                 [2 6 9 11 16]
+                 [3 7 9 11 16]
+                 [1 4 9 12 17]
+                 [2 6 9 12 17]
+                 [3 7 9 12 17]
+                 [1 5 10 12 17]
+                 [3 5 10 12 17]
+                 [2 6 10 12 17])))
+        (is (= paths5
+               '([1 4 9 12 17]
+                 [2 6 9 12 17]
+                 [3 7 9 12 17]
+                 [1 5 10 12 17]
+                 [3 5 10 12 17]
+                 [2 6 10 12 17]
+                 [1 5 10 14 17]
+                 [3 5 10 14 17]
+                 [2 6 10 14 17])))
+        (is (= paths6
+               '()))))))
+
 
 ;;; test grouping
 
@@ -490,6 +642,11 @@
     (traverse-many-levels)
     (traverse-only-feasible-paths)))
 
+(deftest walk2-test
+  (testing "Traverse tree:\n"
+    (traverse-without-conditions)
+    (traverse-conditional)))
+
 
 ;;; tests in the namespace
 
@@ -498,4 +655,5 @@
   "Explicit definition of tests in the namespace"
   []
   (graph-test)
-  (walk-test))
+  (walk-test)
+  (walk2-test))
