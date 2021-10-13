@@ -38,11 +38,11 @@
       (is (= (first (drop 1 tree))
              {:level-size [2 2]
               :gross [4 4 4 4]
-              :abated [2 3 2 3]
+              :abated [3 2 3 2]
               :edges {1 []
                       2 []
-                      3 [1]
-                      4 [1 2]}})))))
+                      3 [1 2]
+                      4 [2]}})))))
 
 (deftest pre-peak-decarbonization-constraints
   (testing "constraints on speed of decarbonization before peak warming"
@@ -68,14 +68,14 @@
       (is (= (first (drop 1 tree))
              {:level-size [3 4]
               :gross [20 20 20 20 20 20 20]
-              :abated [10 11 12 10 11 12 13]
+              :abated [12 11 10 13 12 11 10]
               :edges {1 []
                       2 []
                       3 []
-                      4 [1]
-                      5 [1 2]
-                      6 [1 2 3]
-                      7 [2 3]}})))))
+                      4 [1 2]
+                      5 [1 2 3]
+                      6 [2 3]
+                      7 [3]}})))))
 
 (deftest investment-constraints
   (testing "constraints on emissions produced by world economy"
@@ -100,7 +100,7 @@
       ; Assert
       (is (= (first (drop 1 tree))
              {:level-size [1 3]
-              :gross [7 6 6 5]
+              :gross [7 5 6 6]
               :abated [1 0 1 0]
               :edges {1 []
                       2 [1]
@@ -270,15 +270,15 @@ optional inverted U-shaped emissions curve constraint"
       ; Assert
       (is (= (first (drop 1 tree))
              {:level-size [3 4]
-              :gross [3 2 1 4 3 2 1]
+              :gross [1 2 3 1 2 3 4]
               :abated [0 0 0 0 0 0 0]
               :edges {1 []
                       2 []
                       3 []
-                      4 [1 2]
-                      5 [1 2 3]
-                      6 [2 3]
-                      7 [3]}})))))
+                      4 [1]
+                      5 [1 2]
+                      6 [1 2 3]
+                      7 [2 3]}})))))
 
 
 ;;; test grouping

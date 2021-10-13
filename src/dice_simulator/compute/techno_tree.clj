@@ -32,6 +32,14 @@
              (range (dec yy) (dec xx) -1)
              (range xx yy)))))))
 
+(defn- sort-level
+  "Sorts nodes by observed emissions in ascending order and then by abated
+emissions in ascending order"
+  [points]
+  (->> (map #(conj % (apply - %)) points)
+       (sort-by (juxt first #(first (drop 2 %))))
+       (map rest)))
+
 (defn- next-level
   "Determines descendants for a node"
   [t h [prev-emitted prev-abated] limitf maxf candidate?]
@@ -70,23 +78,29 @@
                       second))
                (#(next-level t h % limitf maxf candidate?))
                (reduce
-                (fn [[counter coll m] out]
+                (fn [[coll m] out]
                   (if (contains? coll out)
-                    (->> (get coll out)
-                         ((fn [x]
-                            (->> (get m x)
+                    (vector coll
+                            (->> (get m out)
                                  (#(conj % idx))
-                                 (assoc! m x))))
-                         (vector counter coll))
-                    ((juxt identity
-                           #(assoc! coll out %)
-                           #(assoc! m % [idx]))
-                     (inc counter))))
+                                 (assoc! m out)))
+                    (vector (assoc! coll out nil)
+                            (assoc! m out [idx]))))
                 seed1)))
-        [0 (transient {}) (transient {})]
+        [(transient {}) (transient {})]
         points)
-       rest
-       (map persistent!)))
+       (map persistent!)
+       ((fn [[children edges]]
+          (->> (keys children)
+               sort-level
+               (#(->> (range)
+                      (map inc)
+                      (zipmap %)))
+               ((juxt identity
+                      (fn [coll]
+                        (->> (keys edges)
+                             (map #(get coll %))
+                             (#(zipmap % (vals edges))))))))))))
 
 (defn- append
   "Appends new level specified by points and edges to a preexisting graph"
@@ -118,26 +132,27 @@
   "Determines root nodes in a forest"
   [h {e0 :emitted e0_ :abated} limitf maxf candidate?]
   (let [t 0]
-    ((juxt (fn [_] (inc t))
-           (fn [points]
-             (->> (range)
-                  (map inc)
-                  (zipmap points)))
-           (fn [points]
-             (zipmap [:level-size
-                      :gross
-                      :abated
-                      :edges]
-                     ((juxt #(vector (count %))
-                            #(vec (map first %))
-                            #(vec (map second %))
-                            #(->> (count %)
-                                  inc
-                                  (range 1)
-                                  ((fn [ks]
-                                     (zipmap ks (repeat []))))))
-                      points))))
-     (next-level t h [e0 e0_] limitf maxf candidate?))))
+    (->> (next-level t h [e0 e0_] limitf maxf candidate?)
+         sort-level
+         ((juxt (fn [_] (inc t))
+                (fn [points]
+                  (->> (range)
+                       (map inc)
+                       (zipmap points)))
+                (fn [points]
+                  (zipmap [:level-size
+                           :gross
+                           :abated
+                           :edges]
+                          ((juxt #(vector (count %))
+                                 #(vec (map first %))
+                                 #(vec (map second %))
+                                 #(->> (count %)
+                                       inc
+                                       (range 1)
+                                       ((fn [ks]
+                                          (zipmap ks (repeat []))))))
+                           points))))))))
 
 (defn- initialize-paths
   "Traverses initial level"
