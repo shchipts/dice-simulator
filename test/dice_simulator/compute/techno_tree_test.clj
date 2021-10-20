@@ -547,7 +547,10 @@
                                      (not= % [17 14 10])))
             paths5 (walk2 tree #(and (not= % [15 11])
                                      (not= % [16 11])))
-            paths6 (walk2 tree #(not= % [15]))]
+            paths6 (walk2 tree #(not= % [15]))
+            paths7 (walk2 {:level-size [2 1 1]
+                           :edges {1 [] 2 [] 3 [1 2] 4 [3]}}
+                          #(not= % [4 3 2]))]
 
         ; Assert
         (is (= paths1
@@ -623,7 +626,9 @@
                  [3 5 10 14 17]
                  [2 6 10 14 17])))
         (is (= paths6
-               '()))))))
+               '()))
+        (is (= paths7
+               '([1 3 4])))))))
 
 
 ;;; test grouping

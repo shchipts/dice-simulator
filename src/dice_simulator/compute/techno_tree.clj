@@ -215,14 +215,21 @@ paths containing them. Returns graph structure represented by the number of
 nodes at each time step (:level-size), node labels (:gross and :abated) and by
 the adjacency list which associates each node with the collection of its
 ancestor nodes in the graph (:edges)"
-  [h init limitf maxf candidate?]
-  (->> (roots h init limitf maxf candidate?)
-       (iterate
-        (fn [[t terminal-points pre-graph]]
-          (->> (next-level-many t terminal-points h limitf maxf candidate?)
-               ((juxt first #(append % pre-graph)))
-               (apply vector (inc t)))))
-       (map last)))
+  ([h init limitf maxf]
+   (graph h
+          init
+          limitf
+          maxf
+          (fn [t pre-emitted cur-emitted]
+            (identity true))))
+  ([h init limitf maxf candidate?]
+   (->> (roots h init limitf maxf candidate?)
+        (iterate
+         (fn [[t terminal-points pre-graph]]
+           (->> (next-level-many t terminal-points h limitf maxf candidate?)
+                ((juxt first #(append % pre-graph)))
+                (apply vector (inc t)))))
+        (map last))))
 
 (defn walk
   "Traverses all paths to the terminal level of a graph. Applies
@@ -258,7 +265,7 @@ candidate? to filter paths, which are not feasible"
 (defn- inner-right
   "Returns the greatest subpath, where path contains all nodes of the subpath
 apart from the end node. If no subpath exists, returns an empty vector."
-  [edges path]
+  [edges candidate? path]
   (->> (reverse path)
        ((juxt rest drop-last))
        (apply
@@ -268,12 +275,15 @@ apart from the end node. If no subpath exists, returns an empty vector."
                (get edges)
                (drop-while #(not= % node))
                second
-               (#(if (nil? %)
-                   (rest rest-path)
-                   (->> (conj rest-path %)
-                        reverse
-                        vec
-                        reduced))))))
+               ((fn [right-node]
+                  (if (nil? right-node)
+                    (rest rest-path)
+                    (->> (conj rest-path right-node)
+                         reverse
+                         vec
+                         (#(if (candidate? %)
+                             (reduced %)
+                             (rest rest-path))))))))))
        (#(if (seq %) % []))))
 
 (defn- left
@@ -302,7 +312,7 @@ not feasible."
             (recur edges
                    candidate?
                    terminal-nodes
-                   (inner-right edges pre-path))))))))
+                   (inner-right edges candidate? pre-path))))))))
 
 (defn walk2
   "Returns a lazy sequence containg all paths from roots to terminal nodes
@@ -321,6 +331,6 @@ node and ends at any node of a graph (including a root)."
           (left edges
                 candidate?
                 terminal-nodes
-                (inner-right edges prev-path))))
+                (inner-right edges candidate? prev-path))))
        (take-while seq)
        (map (comp reverse first))))

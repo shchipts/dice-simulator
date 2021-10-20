@@ -39,8 +39,8 @@ inverted U-shaped curve"
                  (if (empty? next)
                    (reduced true)
                    v)))))
-         (emitted graph (last (butlast path)))
-         (drop 2 (iterate butlast path))))))
+         (emitted graph (last (drop-last path)))
+         (drop 2 (iterate drop-last path))))))
 
 (defn- max-produced
   "Determines upper bound on produced emissions"
@@ -180,4 +180,39 @@ U-shaped emissions curve (optional)"
                 path)
                (* h z)
                (+ (* e0 z))
-               (real<= cummax)))))));)
+               (real<= cummax)))))))
+
+(defn emissions-paths2
+  ([graph h init parameters constraints]
+   (emissions-paths2 graph h init parameters constraints false))
+  ([graph
+    h
+    {e0 :industrial-emissions}
+    {z :time-step}
+    {{peak-t :net-zero-timing} :decarbonization
+     {{{cummax :maximum} :cumulative-emissions} :industrial-emissions} :volume}
+    u-shape?]
+   (techno-tree/walk2
+    graph
+    (fn [path]
+      (and (or (not u-shape?)
+               (->> (reverse path)
+                    ;(#(conj % (int (math/floor (/ e0 h))))) ;; TODO: add e0
+                    (map #(emitted graph %))
+                    (#(map list % (rest %)))
+                    (drop-while (fn [[e1 e2]] (real<= e1 e2)))
+                    (drop-while (fn [[e1 e2]] (real>= e1 e2)))
+                    empty?))
+           (or (-> (:level-size graph)
+                   count
+                   (- (count path))
+                   inc
+                   (> peak-t))
+               (-> (reduce
+                    (fn [seed v]
+                      (+ seed (emitted graph v)))
+                    0
+                    path)
+                   (* h z)
+                   (+ (* e0 z))
+                   (real<= cummax))))))))

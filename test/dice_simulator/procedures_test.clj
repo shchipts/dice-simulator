@@ -280,6 +280,113 @@ optional inverted U-shaped emissions curve constraint"
                       6 [1 2 3]
                       7 [2 3]}})))))
 
+(deftest cummulative-emissions-constraint2
+  (testing "traversal with cumulative emissions constraint"
+    (; Arrange
+     let [tree {:level-size [2 1 2 4]
+                :gross [5 6 2 2 3 1 2 3 4]
+                :abated [5 0 3 1 0 0 0 1 0]
+                :edges {1 []
+                        2 []
+                        3 [1 2]
+                        4 [3]
+                        5 [3]
+                        6 [4]
+                        7 [4 5]
+                        8 [4 5]
+                        9 [5]}}]
+      (; Act
+       let [paths1 (emissions-paths2 tree
+                                     2
+                                     {:industrial-emissions 0.5}
+                                     {:time-step 3}
+                                     {:volume
+                                      {:industrial-emissions
+                                       {:cumulative-emissions {:maximum 0}}}
+                                      :decarbonization
+                                      {:net-zero-timing 0}})
+            paths2 (emissions-paths2 tree
+                                     1
+                                     {:industrial-emissions 0.5}
+                                     {:time-step 3}
+                                     {:volume
+                                      {:industrial-emissions
+                                       {:cumulative-emissions {:maximum 14}}}
+                                      :decarbonization
+                                      {:net-zero-timing 5}})
+            paths3 (emissions-paths2 tree
+                                     1
+                                     {:industrial-emissions 0.5}
+                                     {:time-step 3}
+                                     {:volume
+                                      {:industrial-emissions
+                                       {:cumulative-emissions {:maximum 14}}}
+                                      :decarbonization
+                                      {:net-zero-timing 2}})]
+
+        ; Assert
+        (is (= paths1
+               '([1 3 4 6]
+                 [2 3 4 6]
+                 [1 3 4 7]
+                 [2 3 4 7]
+                 [1 3 5 7]
+                 [2 3 5 7]
+                 [1 3 4 8]
+                 [2 3 4 8]
+                 [1 3 5 8]
+                 [2 3 5 8]
+                 [1 3 5 9]
+                 [2 3 5 9])))
+        (is (= paths2
+               '([1 3 4 6]
+                 [1 3 4 7]
+                 [1 3 4 8])))
+
+        (is (= paths3
+               '([1 3 4 6]
+                 [1 3 4 7]
+                 [1 3 5 7]
+                 [1 3 4 8]
+                 [1 3 5 8])))))))
+
+(deftest emissions-u-shape-constraint
+  (testing "traversal with inverted U-shaped emissions curve constraint"
+    (; Arrange
+     let [tree {:level-size [2 1 2 4]
+                :gross [5 6 3 2 3 0 2 3 4]
+                :abated [5 0 3 2 0 0 0 1 0]
+                :edges {1 []
+                        2 []
+                        3 [1 2]
+                        4 [3]
+                        5 [3]
+                        6 [4]
+                        7 [4 5]
+                        8 [4 5]
+                        9 [5]}}]
+      (; Act
+       let [paths (emissions-paths2 tree
+                                    1
+                                    {:industrial-emissions 0.5}
+                                    {:time-step 3}
+                                    {:volume
+                                     {:industrial-emissions
+                                      {:cumulative-emissions {:maximum 0}}}
+                                     :decarbonization
+                                     {:net-zero-timing 0}}
+                                    true)]
+
+        ; Assert
+        (is (= paths
+               '([1 3 4 6]
+                 [2 3 4 6]
+                 [1 3 4 7]
+                 [1 3 5 7]
+                 [1 3 4 8]
+                 [1 3 5 8]
+                 [1 3 5 9])))))))
+
 
 ;;; test grouping
 
@@ -292,6 +399,11 @@ optional inverted U-shaped emissions curve constraint"
     (cummulative-emissions-constraint)
     (emissions-growth-constraint)))
 
+(deftest emissions-paths2-test
+  (testing "Emissions tree:\n"
+    (cummulative-emissions-constraint2)
+    (emissions-u-shape-constraint)))
+
 
 ;;; tests in the namespace
 
@@ -300,4 +412,5 @@ optional inverted U-shaped emissions curve constraint"
   "Explicit definition of tests in the namespace"
   []
   (emissions-tree-test)
-  (emissions-paths-test))
+  (emissions-paths-test)
+  (emissions-paths2-test))
