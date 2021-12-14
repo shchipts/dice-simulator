@@ -13,7 +13,7 @@
 ;;; tests
 
 (deftest limiting-case-ffi-test
-  (testing "filter net FFI emissions curve which lie under the limiting case"
+  (testing "filter net FFI emissions curves which lie under the limiting case"
     (; Act
      let [out1 (limiting-case-ffi [35.85 65 2030 -19.5 15 50])
           out2 (limiting-case-ffi [35.85 36 2025 -20 5 50])
@@ -26,8 +26,8 @@
       (is (false? out3))
       (is (false? out4)))))
 
-(deftest baseline-ffi-test
-  (testing "filter net FFI emissions curve which lie above SSP baseline"
+(deftest net-emissions-baseline
+  (testing "filter net FFI emissions curves which lie above SSP baseline"
     (; Act
      let [out1 (baseline-ffi [35.85 36 2060 -19.5 15 50] :SSP1)
           out2 (baseline-ffi [35.85 40 2030 -20 15 50] :SSP1)
@@ -38,8 +38,37 @@
       (is (false? out2))
       (is (false? out3)))))
 
+(deftest gross-emissions-baseline
+  (testing "filter pars of net FFI emissions and CDR curves which lie
+above SSP baseline"
+    (; Act
+     let [out1 (baseline-ffi [35.85 36 2055 -2.5 50 50] [20 2030 40] :SSP1)
+          out2 (baseline-ffi [35.85 36 2055 -2.5 50 50] [20 2030 40] :SSP2)
+          out3 (baseline-ffi [35.85 36 2055 -2.5 50 50] [20 2030 40] :SSP3)
+          out4 (baseline-ffi [35.85 36 2055 -2.5 50 50] [20 2030 40] :SSP4)
+          out5 (baseline-ffi [35.85 36 2055 -2.5 50 50] [20 2030 40] :SSP5)
+
+          out6 (baseline-ffi [35.85 36 2055 -2.5 50 50] [19.5 2040 40] :SSP1)
+          out7 (baseline-ffi [35.85 36 2055 -2.5 50 50] [19.5 2040 40] :SSP2)
+          out8 (baseline-ffi [35.85 36 2055 -2.5 50 50] [19.5 2040 40] :SSP3)
+          out9 (baseline-ffi [35.85 36 2055 -2.5 50 50] [19.5 2040 40] :SSP4)
+          out10 (baseline-ffi [35.85 36 2055 -2.5 50 50] [19.5 2040 40] :SSP5)]
+
+      ; Assert
+      (is (false? out1))
+      (is (false? out2))
+      (is (true? out3))
+      (is (false? out4))
+      (is (false? out5))
+
+      (is (false? out6))
+      (is (true? out7))
+      (is (true? out8))
+      (is (false? out9))
+      (is (true? out10)))))
+
 (deftest emissions-quota-test
-  (testing "filter net FFI emissions curve which exceed cumulative emissions
+  (testing "filter net FFI emissions curves which exceed cumulative emissions
 quota"
     (; Act
      let [out1 (emissions-quota [35.85 65 2045 -20 15 50] :SSP5 :3.4)
@@ -52,3 +81,23 @@ quota"
       (is (true? out2))
       (is (false? out3))
       (is (false? out4)))))
+
+
+;;; test grouping
+
+
+(deftest baseline-ffi-test
+  (testing "Baseline emissions constraint:\n"
+    (net-emissions-baseline)
+    (gross-emissions-baseline)))
+
+
+;;; tests in the namespace
+
+
+(defn test-ns-hook
+  "Explicit definition of tests in the namespace"
+  []
+  (limiting-case-ffi-test)
+  (baseline-ffi-test)
+  (emissions-quota-test))

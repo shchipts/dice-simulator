@@ -51,15 +51,21 @@ Rogelj, J., Strefler, J., & van Vuuren, D. (2018). Pathways Limiting Warming To
        not))
 
 (defn baseline-ffi
-  "Indicates whether net FFI emissions surpass the upper limiting case of SSP
- baseline. Returns true if net FFI emissions is feasible; false, otherwise"
-  [net-emissions-curve ssp]
-  (->> (rest t-scale/ts)
-       ((juxt #(translator/net-emissions-ffi net-emissions-curve %)
-              #(translator/baseline-emissions-ffi ssp %)))
-       (apply map list)
-       (some (fn [[e baseline]] (real> e baseline)))
-       not))
+  "Indicates whether gross FFI emissions surpass the upper limiting case of
+SSP baseline. Assumes zero CDR emissions if cdr-emissions-curve not supplied.
+Returns true if gross FFI emissions are feasible; false, otherwise"
+  ([net-emissions-curve ssp]
+   (baseline-ffi net-emissions-curve nil ssp))
+  ([net-emissions-curve cdr-emissions-curve ssp]
+   (->> (rest t-scale/ts)
+        ((juxt #(translator/net-emissions-ffi net-emissions-curve %)
+               #(if (nil? cdr-emissions-curve)
+                  (repeat 0)
+                  (translator/cdr-emissions cdr-emissions-curve %))
+               #(translator/baseline-emissions-ffi ssp %)))
+        (apply map list)
+        (some (fn [[e cdr baseline]] (real> (+ e cdr) baseline)))
+        not)))
 
 (defn emissions-quota
   "Indicates whether cumulative net amount of CO2 realised to the atmosphere

@@ -32,9 +32,9 @@
           (condition/emissions-quota curve ssp scenario)))))
 
 (defn net-emissions-ffi
-  "Returns values corresponding to time points ts on the net FFI emissions
-curves in SSP scenarios (GtCO2) represented by a map of all ordered pairs
-(y0 y_ x1 K midpoint-offset dt), where y_ is in y_s, x1 is in x1s and
+  "Returns parameters and values corresponding to time points ts on the net FFI
+emissions curves in SSP scenarios (GtCO2) represented by a map of all ordered
+pairs (y0 y_ x1 K midpoint-offset dt), where y_ is in y_s, x1 is in x1s and
 (K, midpoint-offset, dt) is in logistic-pars. All curves should not exceed the
 lower limiting case of minimum gross FFI emissions in deep mitigation pathways
 and maximum capacity in massive CDR deployment (Kriegler et al. 2018), should
@@ -67,9 +67,12 @@ Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
    ((juxt identity
           #(map
             (fn [ssp]
-              (map
-               (fn [[curve _]]
-                 (translator/net-emissions-ffi curve ts))
-               (net-emissions-pipeline y0 y_s x1s logistic-pars ssp)))
+              (->> (net-emissions-pipeline y0 y_s x1s logistic-pars ssp)
+                   ((juxt (partial map (comp rest first))
+                          (partial
+                           map
+                           (fn [[curve _]]
+                             (translator/net-emissions-ffi curve ts)))))
+                   (zipmap [:parameters :paths])))
             %))
     [:SSP1 :SSP2 :SSP3 :SSP4 :SSP5])))
