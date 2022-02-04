@@ -90,14 +90,18 @@ Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
        (#(comb/cartesian-product % cdr-pars))
        (filter
         (fn [[[pars1 _] pars2]]
-          (and (condition/baseline-ffi pars1 pars2 ssp)
-               (condition/non-negative-gross-gdp pars1 pars2 ssp ts))))
+          (and (condition/baseline-ffi (rest pars1) (rest pars2) ssp)
+               (condition/non-negative-gross-gdp
+                (rest pars1)
+                (rest pars2)
+                ssp
+                ts))))
        (map
         (fn [[[pars1 temperature] pars2]]
           (list pars1
                 pars2
-                (translator/net-emissions-ffi pars1 ts)
-                (translator/cdr-emissions pars2 ts)
+                (translator/net-emissions-ffi (rest pars1) ts)
+                (translator/cdr-emissions (rest pars2) ts)
                 temperature)))
        (map
         (fn [[pars1 pars2 net-emissions cdr temperature]]
@@ -137,6 +141,6 @@ inconsistent initial rate of growth"
           ((juxt identity
                  #(map
                    (fn [cdr]
-                     (translator/cdr-emissions cdr ts))
+                     (translator/cdr-emissions (rest cdr) ts))
                    %))
            cdr-pars)))

@@ -106,8 +106,10 @@
 (deftest economic-growth-test
   (testing "economic output in SSP scenario"
     (; Arrange
-     let [net-emissions (repeat 2 [35.85 36 2055 -2.5 50 50])
-          cdr-emissions (repeat 2 [20 2030 40])
+     let [net-emissions [[1 35.85 36 2055 -2.5 50 50]
+                         [2 35.85 36 2055 -2.5 50 50]]
+          cdr-emissions [[3 20 2030 40]
+                         [4 20 2030 40]]
           temperatures (repeat 2 [1.243 1.38 1.503 1.624 1.722 1.812 1.897
                                   1.98 2.062 2.142 2.225 2.308 2.392 2.474
                                   2.555 2.633 2.708 2.774])
@@ -149,15 +151,15 @@
                                     :dice2016
                                     :SSP5
                                     ts)
-            paths6 (economic-growth [[35.85 38.5 2050 -19.5 16 50]]
-                                    [[0.5 2050 40]]
+            paths6 (economic-growth [[1 35.85 38.5 2050 -19.5 16 50]]
+                                    [[1 0.5 2050 40]]
                                     temperatures
                                     :howard-sterner2017
                                     :dice2016
                                     :SSP1
                                     ts)
-            paths7 (economic-growth [[35.85 36 2020 -6 43 50]]
-                                    [[5.5 2050 40]]
+            paths7 (economic-growth [[1 35.85 36 2020 -6 43 50]]
+                                    [[1 5.5 2050 40]]
                                     temperatures
                                     :howard-sterner2017
                                     :dice2016
@@ -173,15 +175,21 @@
                (count (:consumption paths3))
                4))
         (is (= (nth (vec (:net-emissions paths3)) 0)
-               (nth (vec (:net-emissions paths3)) 1)
-               (nth (vec (:net-emissions paths3)) 2)
-               (nth (vec (:net-emissions paths3)) 3)
-               [35.85 36 2055 -2.5 50 50]))
+               [1 35.85 36 2055 -2.5 50 50]))
+        (is (= (nth (vec (:net-emissions paths3)) 1)
+               [1 35.85 36 2055 -2.5 50 50]))
+        (is (= (nth (vec (:net-emissions paths3)) 2)
+               [2 35.85 36 2055 -2.5 50 50]))
+        (is (= (nth (vec (:net-emissions paths3)) 3)
+               [2 35.85 36 2055 -2.5 50 50]))
         (is (= (nth (vec (:cdr paths3)) 0)
-               (nth (vec (:cdr paths3)) 1)
-               (nth (vec (:cdr paths3)) 2)
-               (nth (vec (:cdr paths3)) 3)
-               [20 2030 40]))
+               [3 20 2030 40]))
+        (is (= (nth (vec (:cdr paths3)) 1)
+               [4 20 2030 40]))
+        (is (= (nth (vec (:cdr paths3)) 2)
+               [3 20 2030 40]))
+        (is (= (nth (vec (:cdr paths3)) 3)
+               [4 20 2030 40]))
 
         (is (real= (nth (vec (:gross-gdp paths3)) 0)
                    [89.53589388 106.6639626 121.5553789 138.469817 153.5602228
@@ -278,14 +286,14 @@
 (deftest cdr-emissions-test
   (testing "CDR emissions"
     (; Act
-     let [paths (cdr-emissions [[20 2030 40]
-                                [19.5 2040 40]]
+     let [paths (cdr-emissions [[1 20 2030 40]
+                                [2 19.5 2040 40]]
                                (range 2015 2105 5))]
 
       ; Assert
       (is (= (:parameters paths)
-             [[20 2030 40]
-              [19.5 2040 40]]))
+             [[1 20 2030 40]
+              [2 19.5 2040 40]]))
 
       (is (= (count (:paths paths))
              2))
