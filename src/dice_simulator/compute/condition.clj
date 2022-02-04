@@ -9,7 +9,8 @@
 (ns ^{:doc "Conditions on simulations from DICE-like simulation model"
       :author "Anna Shchiptsova"}
  dice-simulator.compute.condition
-  (:require [dice-simulator.compute.time-scale :as t-scale]
+  (:require [dice-simulator.compute.generator :as generator]
+            [dice-simulator.compute.time-scale :as t-scale]
             [dice-simulator.compute.translator :as translator]
             [utilities-clj.floating-point-comparison :refer :all]))
 
@@ -98,3 +99,16 @@ Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
           0)
          nil?
          not)))
+
+(defn non-negative-gross-gdp
+  "Indicates whether gross GDP series is feasible. Returns true if series is
+non-negative; false, otherwise"
+  [net-emissions-curve cdr-emissions-curve ssp ts]
+  (->> (generator/gross-gdp
+        (translator/net-emissions-ffi net-emissions-curve ts)
+        (translator/cdr-emissions cdr-emissions-curve ts)
+        ssp
+        ts)
+       (drop-while #(not (neg? %)))
+       seq
+       nil?))

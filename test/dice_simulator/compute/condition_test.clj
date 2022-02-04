@@ -82,6 +82,27 @@ quota"
       (is (false? out3))
       (is (false? out4)))))
 
+(deftest non-negative-gross-gdp-test
+  (testing "filter emissions curves which produce negative gross GDP"
+    (; Act
+     let [out1 (non-negative-gross-gdp [35.85 38.5 2050 -19.5 16 50]
+                                       [0.5 2050 40]
+                                       :SSP1
+                                       (range 2015 2105 5))
+          out2 (non-negative-gross-gdp [35.85 38.5 2050 -19.5 16 50]
+                                       [0.5 2050 40]
+                                       :SSP1
+                                       (range 2015 2080 5))
+          out3 (non-negative-gross-gdp [35.85 38.5 2050 -19.5 16 50]
+                                       [0.5 2050 40]
+                                       :SSP1
+                                       (range 2015 2075 5))]
+
+      ; Assert
+      (is (false? out1))
+      (is (false? out2))
+      (is (true? out3)))))
+
 
 ;;; test grouping
 
@@ -100,4 +121,5 @@ quota"
   []
   (limiting-case-ffi-test)
   (baseline-ffi-test)
-  (emissions-quota-test))
+  (emissions-quota-test)
+  (non-negative-gross-gdp-test))

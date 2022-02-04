@@ -9,7 +9,8 @@
 (ns ^{:doc "Procedures for DICE-like simulation model"
       :author "Anna Shchiptsova"}
  dice-simulator.commands
-  (:require [dice-simulator.compute.generator :as generator]
+  (:require [clojure.math.combinatorics :as comb]
+            [dice-simulator.compute.generator :as generator]
             [dice-simulator.compute.condition :as condition]
             [dice-simulator.compute.translator :as translator]))
 
@@ -76,3 +77,66 @@ Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
                    (zipmap [:parameters :paths])))
             %))
     [:SSP1 :SSP2 :SSP3 :SSP4 :SSP5])))
+
+(defn economic-growth
+  [net-emissions-pars
+   cdr-pars
+   temperature-curves
+   damage-function
+   cost-function
+   ssp
+   ts]
+  (->> (map list net-emissions-pars temperature-curves)
+       (#(comb/cartesian-product % cdr-pars))
+       (filter
+        (fn [[[pars1 _] pars2]]
+          (and (condition/baseline-ffi pars1 pars2 ssp)
+               (condition/non-negative-gross-gdp pars1 pars2 ssp ts))))
+       (map
+        (fn [[[pars1 temperature] pars2]]
+          (list pars1
+                pars2
+                (translator/net-emissions-ffi pars1 ts)
+                (translator/cdr-emissions pars2 ts)
+                temperature)))
+       (map
+        (fn [[pars1 pars2 net-emissions cdr temperature]]
+          (let [gross-gdp (generator/gross-gdp net-emissions cdr ssp ts)
+                damages (generator/damages damage-function temperature)
+                costs (generator/costs cost-function net-emissions cdr ssp ts)]
+            (list pars1
+                  pars2
+                  gross-gdp
+                  damages
+                  costs
+                  (generator/consumption
+                   (generator/net-gdp gross-gdp damages costs)
+                   (generator/capital-stock gross-gdp ssp ts)
+                   ssp
+                   ts)))))
+       (filter
+        (fn [values]
+          (->> (last values)
+               (drop-while #(not (neg? %)))
+               seq
+               nil?)))
+       (#(if (empty? %) % (apply map list %)))
+       (zipmap [:net-emissions :cdr :gross-gdp :damages :costs :consumption])))
+
+(defn cdr-emissions
+  "Returns parameters and values corresponding to time points ts on the CDR
+emissions curves (GtCO2) represented by collection of logistic parameters
+(K midpoint dt). A single CDR emissions curve linearly increases from 0 until
+2020, and follows as generalized logistic curve with carrying capacity K which
+reaches K/2 at midpoint and has the length dt of the time interval needed to
+grow from 5% of K to 95% of K. CDR emissions are introduced linearly from 2015
+through 2020 (with extrapolation to logistic curve value in 2020) to remove
+inconsistent initial rate of growth"
+  [cdr-pars ts]
+  (zipmap [:parameters :paths]
+          ((juxt identity
+                 #(map
+                   (fn [cdr]
+                     (translator/cdr-emissions cdr ts))
+                   %))
+           cdr-pars)))
