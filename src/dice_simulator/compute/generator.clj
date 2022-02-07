@@ -17,8 +17,9 @@
 
 (def ^:private dice-cost-pars
   "Parameters for generic DICE abatement cost function"
-  {:dice2016 {:scale 550 :power 2.6}
-   :dice2013 {:scale 344 :power 2.8}})
+  {:dice2016 {:scale1 550 :power1 2.6}
+   :dice2013 {:scale1 344 :power1 2.8}
+   :su2017 {:scale1 245.8 :power1 2.3 :scale2 448.4 :power2 12.4}})
 
 (defn parameterize-net-emissions-ffi
   "Returns a map of all ordered pairs (y_ x1 K midpoint-offset dt), where y_ is
@@ -100,28 +101,40 @@ series and SSP baseline; measured in trillion 2010 USD"
 (defn costs
   "Returns abatement cost corresponding to time points ts based on SSP baseline;
 measures the ratio of the abatement cost to the output. Supported cost
-functions: DICE2013 (:dice2013), DICE2016 (:dice2016)"
+functions: DICE2013 (:dice2013), DICE2016 (:dice2016), Su et al. 2017 (:su2017)
+
+[1] DICE2013
+www.econ.yale.edu/~nordhaus/homepage/homepage/DICE2013R_100413_vanilla.gms
+[2] DICE2016
+www.econ.yale.edu/~nordhaus/homepage/homepage/DICE2016R-091916ap.gms
+[3] Su, X., Takahashi, K., Fujimori, S., Hasegawa, T., Tanaka, K., Kato, E.,
+Shiogama, X., Masui, T, & Emori, S. (2017). Emission Pathways to Achieve 2.0C
+and 1.5C Climate Targets. Earth's Future, 5: 592–604. DOI:10.1002/2016EF000492"
   [cost-function net-emissions cdr-emissions ssp ts]
-  (let [{scale :scale pow :power} (get dice-cost-pars cost-function)]
-    (map
-     (fn [e cdr sigma t]
-       (->> (range 2015 2105 5)
-            (map-indexed vector)
-            (drop-while #(not= t (second %)))
-            ffirst
-            inc
-            (math/expt (- 1 0.025))
-            (* scale)
-            (#(/ % (* 1000 pow)))
-            (* (->> (+ e cdr)
-                    (/ e)
-                    (- 1)
-                    (#(math/expt % pow))))
-            (* sigma)))
-     net-emissions
-     cdr-emissions
-     (translator/baseline-carbon-intensity ssp ts)
-     ts)))
+  (map
+   (fn [e cdr sigma t]
+     (->> (range 2015 2105 5)
+          (map-indexed vector)
+          (drop-while #(not= t (second %)))
+          ffirst
+          inc
+          (math/expt (- 1 0.025))
+          (#(/ % 1000))
+          (* sigma)
+          (* (->> (get dice-cost-pars cost-function)
+                  (#(map
+                     (fn [[k1 k2]]
+                       (let [scale (get % k1 0) pow (get % k2 1)]
+                         (fn [x] (* (/ scale pow) (math/expt x pow)))))
+                     [[:scale1 :power1] [:scale2 :power2]]))
+                  (reduce
+                   (fn [seed costf]
+                     (+ seed (costf (- 1 (/ e (+ e cdr))))))
+                   0)))))
+   net-emissions
+   cdr-emissions
+   (translator/baseline-carbon-intensity ssp ts)
+   ts))
 
 (defn net-gdp
   "Returns gdp net of damages and abatement costs; measured in trillion 2010

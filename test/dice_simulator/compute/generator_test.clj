@@ -193,7 +193,9 @@
             cost7 (costs :dice2013 net-emissions cdr :SSP2 ts)
             cost8 (costs :dice2013 net-emissions cdr :SSP3 ts)
             cost9 (costs :dice2013 net-emissions cdr :SSP4 ts)
-            cost10 (costs :dice2013 net-emissions cdr :SSP5 ts)]
+            cost10 (costs :dice2013 net-emissions cdr :SSP5 ts)
+
+            cost11 (costs :su2017 net-emissions cdr :SSP1 ts)]
 
         ; Assert
         (is (real= cost1
@@ -246,7 +248,13 @@
                    [0.00000000 0.00005351 0.00017619 0.00042085 0.00068960
                     0.00089133 0.00098506 0.00100501 0.00099055 0.00097121
                     0.00092095 0.00088066 0.00083391 0.00080956 0.00078020
-                    0.00079649 0.00086286 0.00103469]))))))
+                    0.00079649 0.00086286 0.00103469]))
+
+        (is (real= cost11
+                   [0.00000000 0.00014160 0.00034400 0.00064784 0.00089958
+                    0.00103110 0.00103083 0.00096921 0.00088652 0.00081063
+                    0.00071953 0.00064261 0.00055928 0.00049295 0.00045349
+                    0.00043352 0.00045121 0.00050679]))))))
 
 (deftest net-gdp-test
   (testing "calculate gdp net of damages and abatement cost"
