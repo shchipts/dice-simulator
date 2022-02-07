@@ -124,9 +124,15 @@ functions: DICE2013 (:dice2013), DICE2016 (:dice2016)"
      ts)))
 
 (defn net-gdp
-  "Returns gdp net of damages and abatement costs"
+  "Returns gdp net of damages and abatement costs; measured in trillion 2010
+USD"
   [gross-gdp damages costs]
   (map #(* %1 (- 1 %2 %3)) gross-gdp damages costs))
+
+(defn net-gdp-capita
+  "Returns net gdp per capita; measured in thousands 2010 USD per year"
+  [net-gdp ssp ts]
+  (map / net-gdp (translator/baseline-labor ssp ts)))
 
 (defn consumption
   "Returns consumption per capita series corresponding to time points ts based

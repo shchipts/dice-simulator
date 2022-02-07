@@ -107,14 +107,16 @@ Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
         (fn [[pars1 pars2 net-emissions cdr temperature]]
           (let [gross-gdp (generator/gross-gdp net-emissions cdr ssp ts)
                 damages (generator/damages damage-function temperature)
-                costs (generator/costs cost-function net-emissions cdr ssp ts)]
+                costs (generator/costs cost-function net-emissions cdr ssp ts)
+                net-gdp (generator/net-gdp gross-gdp damages costs)]
             (list pars1
                   pars2
                   gross-gdp
                   damages
                   costs
+                  (generator/net-gdp-capita net-gdp ssp ts)
                   (generator/consumption
-                   (generator/net-gdp gross-gdp damages costs)
+                   net-gdp
                    (generator/capital-stock gross-gdp ssp ts)
                    ssp
                    ts)))))
@@ -125,7 +127,13 @@ Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
                seq
                nil?)))
        (#(if (empty? %) % (apply map list %)))
-       (zipmap [:net-emissions :cdr :gross-gdp :damages :costs :consumption])))
+       (zipmap [:net-emissions
+                :cdr
+                :gross-gdp
+                :damages
+                :costs
+                :net-gdp-capita
+                :consumption])))
 
 (defn cdr-emissions
   "Returns parameters and values corresponding to time points ts on the CDR
