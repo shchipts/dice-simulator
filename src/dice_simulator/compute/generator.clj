@@ -21,6 +21,14 @@
    :dice2013 {:scale1 344 :power1 2.8}
    :su2017 {:scale1 245.8 :power1 2.3 :scale2 448.4 :power2 12.4}})
 
+(def ^:private burkedf
+  "Parameters for damage function from Burke et al (2015)"
+  {:T2015-absolute 14.83
+   :T2015 1.243
+   :Tavg1980_2010 14.42
+   :b1 0.0127
+   :b2 -0.0005})
+
 (defn parameterize-net-emissions-ffi
   "Returns a map of all ordered pairs (y_ x1 K midpoint-offset dt), where y_ is
 in y_s, x1 is in x1s and (K, midpoint-offset, dt) is in logistic-pars. The set
@@ -56,21 +64,67 @@ emissions is minimal"
 (defn damages
   "Returns collection of global climate damages corresponding to specified
 damage function. Supported damage functions: Howard and Sterner 2017 (Howard &
-Sterner 2017; Hansel et al. 2020) (:howard-sterner2017)
+Sterner 2017; Hansel et al. 2020) (:howard-sterner2017), Burke et al. 2015
+(Burke et al. 2015; Glanemann et al. 2020) (:burke2015). For :burke2015, damages
+start at the value estimated with :howard-sterner2017
 
 [1] Howard, P., & Sterner, T. (2017). Few and Not So Far Between: A
 Meta-analysis of Climate Damage Estimates. Environmental and Resource
 Economics, 68
 [2] Hansel, M., Drupp, M., Johansson, D., Nesje, F., Azar, C, Freeman, M.,
 Groom, B., & Sterner, T. (2020). Climate Economics Support for the UN Climate
-Targets. Nature Climate Change, 10"
-  [damage-function temperature]
-  (condp = damage-function
-    :howard-sterner2017 (map
-                         #(-> (- % 0.115)
-                              (math/expt 2)
-                              (* 0.007438))
-                         temperature)))
+Targets. Nature Climate Change, 10
+[3] Burke, M., Hsiang, S., & Miguel, E. (2015). Global Non-linear Effect of
+Temperature on Economic Production. Nature, 527: 235-239.
+doi:10.1038/nature15725
+[4] Glanemann, N., Willner, S., & Levermann, A. (2020). Paris Climate Agreement
+Passes the Cost-benefit Test. Nature Communications, 11: 110.
+doi.org/10.1038/s41467-019-13961-1"
+  [damage-function temperature gross-gdp ssp ts]
+  (let [howard-sternerf #(-> (- % 0.115)
+                             (math/expt 2)
+                             (* 0.007438))]
+    (condp = damage-function
+      :howard-sterner2017 (map howard-sternerf temperature)
+      :burke2015 (let [hf #(+ (* (:b1 burkedf) %)
+                              (* (:b2 burkedf) (math/expt % 2)))
+                       base (hf (:Tavg1980_2010 burkedf))]
+                   (->> (translator/baseline-labor ssp ts)
+                        (map list gross-gdp temperature)
+                        ((juxt (fn [[[Y T L] _]]
+                                 (->> (howard-sternerf T)
+                                      ((juxt vector
+                                             #(/ (* Y (- 1 %)) L)))
+                                      (#(conj % (/ Y L)))))
+                               #(map
+                                 (fn [t1 t0 coll]
+                                   (conj coll (- t1 t0)))
+                                 (rest ts)
+                                 ts
+                                 (rest %))))
+                        (apply
+                         reduce
+                         (fn [[xs prev-Qc prev-Yc] [step Y T L]]
+                           (let [Yc (/ Y L)]
+                             (->> (/ Yc prev-Yc)
+                                  (#(math/expt % (double (/ 1 step))))
+                                  (+ (-> ((juxt :T2015-absolute
+                                                :T2015)
+                                          burkedf)
+                                         (#(apply - %))
+                                         (+ T)
+                                         hf
+                                         (- base)))
+                                  (#(math/expt % step))
+                                  (* prev-Qc)
+                                  ((juxt (fn [Qc]
+                                           (->> (* Qc L)
+                                                (#(/ % Y))
+                                                (- 1)
+                                                (conj xs)))
+                                         identity
+                                         (fn [_] (identity Yc))))))))
+                        first)))))
 
 (defn gross-gdp
   "Returns gross GDP series corresponding to time points ts based on SSP

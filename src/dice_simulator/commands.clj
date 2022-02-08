@@ -106,7 +106,11 @@ Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
        (map
         (fn [[pars1 pars2 net-emissions cdr temperature]]
           (let [gross-gdp (generator/gross-gdp net-emissions cdr ssp ts)
-                damages (generator/damages damage-function temperature)
+                damages (generator/damages damage-function
+                                           temperature
+                                           gross-gdp
+                                           ssp
+                                           ts)
                 costs (generator/costs cost-function net-emissions cdr ssp ts)
                 net-gdp (generator/net-gdp gross-gdp damages costs)]
             (list pars1
