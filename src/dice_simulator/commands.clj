@@ -18,18 +18,21 @@
   "Returns net FFI emissions curves corresponding to SSP scenario"
   [y0 y_s x1s logistic-pars ssp]
   (->> (generator/parameterize-net-emissions-ffi y_s x1s logistic-pars)
-       ((juxt (fn [_] (repeat y0))
+       ((juxt :id
+              (fn [_] (repeat y0))
               :y_
               :x1
               :K
               :midpoint-offset
               :dt))
        (apply map list)
-       (filter #(and (condition/limiting-case-ffi %)
-                     (condition/baseline-ffi % ssp)))
-       (map #(vector % (generator/infill-net-emissions-land-use % ssp)))
+       (filter #(and (condition/limiting-case-ffi (rest %))
+                     (condition/baseline-ffi (rest %) ssp)))
+       (map (juxt first
+                  rest
+                  #(generator/infill-net-emissions-land-use (rest %) ssp)))
        (filter
-        (fn [[curve scenario]]
+        (fn [[_ curve scenario]]
           (condition/emissions-quota curve ssp scenario)))))
 
 (defn net-emissions-ffi
@@ -69,10 +72,13 @@ Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
           #(map
             (fn [ssp]
               (->> (net-emissions-pipeline y0 y_s x1s logistic-pars ssp)
-                   ((juxt (partial map (comp rest first))
+                   ((juxt (partial
+                           map
+                           (fn [[id curve _]]
+                             (conj (rest curve) id)))
                           (partial
                            map
-                           (fn [[curve _]]
+                           (fn [[_ curve __]]
                              (translator/net-emissions-ffi curve ts)))))
                    (zipmap [:parameters :paths])))
             %))

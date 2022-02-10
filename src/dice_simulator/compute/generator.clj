@@ -35,9 +35,9 @@ in y_s, x1 is in x1s and (K, midpoint-offset, dt) is in logistic-pars. The set
 of nth items of map values represents a single net FFI emissions curve"
   [y_s x1s logistic-pars]
   (->> (comb/cartesian-product y_s x1s logistic-pars)
-       (map flatten)
+       (map #(conj (flatten %2) (inc %1)) (range))
        (apply map vector)
-       (zipmap [:y_ :x1 :K :midpoint-offset :dt])))
+       (zipmap [:id :y_ :x1 :K :midpoint-offset :dt])))
 
 (defn infill-net-emissions-land-use
   "Returns SSP expected radiative forcing in the year 2100 scenario for which
