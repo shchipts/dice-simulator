@@ -332,16 +332,19 @@
     (; Arrange
      let [net-gdp [89 105 120 136 150 163 170 176 179 181 183 184 185 184 181
                    174 164 149]
-          capital-stock [197 232 231 246 253 249 235 214 196 176 160 145 133
-                         119 104 86 66 45]
+          ;capital-stock [197 232 231 246 253 249 235 214 196 176 160 145 133
+          ;               119 104 86 66 45]
+          investment [23.134694 18.801264 21.919362 21.547892 19.921206
+                      17.593598 15.04697 13.927028 12.052792 11.214752 10.10432
+                      9.47579 8.092966 6.746338 4.917808 3.043572 1.205532]
           ts (range 2015 2105 5)]
 
       ; Act
-      (let [c1 (consumption net-gdp capital-stock :SSP1 ts)
-            c2 (consumption net-gdp capital-stock :SSP2 ts)
-            c3 (consumption net-gdp capital-stock :SSP3 ts)
-            c4 (consumption net-gdp capital-stock :SSP4 ts)
-            c5 (consumption net-gdp capital-stock :SSP5 ts)]
+      (let [c1 (consumption net-gdp investment :SSP1 ts)
+            c2 (consumption net-gdp investment :SSP2 ts)
+            c3 (consumption net-gdp investment :SSP3 ts)
+            c4 (consumption net-gdp investment :SSP4 ts)
+            c5 (consumption net-gdp investment :SSP5 ts)]
 
         ; Assert
         (is (real= c1
@@ -369,3 +372,20 @@
                     17.30410591 18.24909080 18.89182562 19.44864958 19.76775504
                     20.28577731 20.63665721 21.24116396 21.61630024 21.96771156
                     21.83072762 21.41187268]))))))
+
+(deftest investment-test
+  (testing "calculate investment series"
+    (; Act
+     let [xs (investment [307.725014 362.3960547 347.1713046 356.9882661
+                          330.7595839 309.1364062 276.065843 246.0266481
+                          217.1729677 191.7483076 169.2488432 150.5187677
+                          133.96354 118.6176715 102.5552375 85.83332127
+                          68.53722793 50.97973782]
+                         (range 2015 2105 5))]
+
+      ; Assert
+      (is (real= xs
+                 [36.13750224 26.63601165 30.39741649 23.99231653 22.7652359
+                  18.7047773 16.60250569 14.37933845 12.70196838 11.20467701
+                  10.11580366 9.016742572 7.902708153 6.502537731 5.055095816
+                  3.570702011 2.10183802])))))

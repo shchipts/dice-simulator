@@ -164,7 +164,16 @@
                                     :howard-sterner2017
                                     :dice2016
                                     :SSP1
-                                    ts)]
+                                    ts)
+            paths8 (economic-growth [[4059 35.85 41.0 2060 -20.0 15 50]]
+                                    [[36 17.5 2050 40]]
+                                    [[1.243 1.416 1.557 1.695 1.819 1.942 2.059
+                                      2.174 2.288 2.402 2.522 2.602 2.655 2.68
+                                      2.678 2.651 2.607 2.553]]
+                                    :howard-sterner2017
+                                    :dice2016
+                                    :SSP5
+                                    (range 2015 2105 5))]
 
         ; Assert
         (is (= (count (:net-emissions paths3))
@@ -302,6 +311,7 @@
                (count (:net-emissions paths5))
                (count (:net-emissions paths6))
                (count (:net-emissions paths7))
+               (count (:net-emissions paths8))
                0))))))
 
 (deftest cdr-emissions-test

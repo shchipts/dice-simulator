@@ -118,25 +118,30 @@ Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
                                            ssp
                                            ts)
                 costs (generator/costs cost-function net-emissions cdr ssp ts)
-                net-gdp (generator/net-gdp gross-gdp damages costs)]
+                net-gdp (generator/net-gdp gross-gdp damages costs)
+                investment (generator/investment
+                            (generator/capital-stock gross-gdp ssp ts)
+                            ts)]
             (list pars1
                   pars2
                   gross-gdp
                   damages
                   costs
                   (generator/net-gdp-capita net-gdp ssp ts)
-                  (generator/consumption
-                   net-gdp
-                   (generator/capital-stock gross-gdp ssp ts)
-                   ssp
-                   ts)))))
+                  (generator/consumption net-gdp investment ssp ts)
+                  investment))))
        (filter
         (fn [values]
-          (->> (last values)
-               (drop-while #(not (neg? %)))
-               seq
-               nil?)))
-       (#(if (empty? %) % (apply map list %)))
+          (->> (iterate drop-last values)
+               (map
+                (fn [xs]
+                  (->> (last xs)
+                       (drop-while #(not (neg? %)))
+                       seq
+                       nil?)))
+               (take 2)
+               (every? identity))))
+       (#(if (empty? %) % (drop-last (apply map list %))))
        (zipmap [:net-emissions
                 :cdr
                 :gross-gdp

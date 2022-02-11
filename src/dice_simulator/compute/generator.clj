@@ -201,11 +201,10 @@ USD"
   [net-gdp ssp ts]
   (map / net-gdp (translator/baseline-labor ssp ts)))
 
-(defn consumption
-  "Returns consumption per capita series corresponding to time points ts based
-on net-GDP and capital-stock series and SSP baseline; measured in thousands
-2010 USD per year"
-  [net-gdp capital-stock ssp ts]
+(defn investment
+  "Returns investment series corresponding to time points ts based on capital
+stock series; measured in thousands 2010 USD per year"
+  [capital-stock ts]
   (->> (vector capital-stock ts)
        (reduce
         (fn [seed coll]
@@ -213,14 +212,22 @@ on net-GDP and capital-stock series and SSP baseline; measured in thousands
         [])
        (apply
         map
-        (fn [gdp labor K K-next t t-next]
+        (fn [K K-next t t-next]
           (let [h (- t-next t)]
             (-> (- 1 0.1)
                 (math/expt h)
                 (* K)
                 (#(- K-next %))
-                (/ h)
-                (#(- gdp %))
-                (/ labor))))
-        net-gdp
-        (translator/baseline-labor ssp ts))))
+                (/ h)))))))
+
+(defn consumption
+  "Returns consumption per capita series corresponding to time points ts based
+on net-GDP and investment series and SSP baseline; measured in thousands
+2010 USD per year"
+  [net-gdp investment ssp ts]
+  (map
+   (fn [Q I L]
+     (/ (- Q I) L))
+   net-gdp
+   investment
+   (translator/baseline-labor ssp ts)))
