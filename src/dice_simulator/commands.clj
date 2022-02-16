@@ -119,14 +119,14 @@ Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
                                            ts)
                 costs (generator/costs cost-function net-emissions cdr ssp ts)
                 net-gdp (generator/net-gdp gross-gdp damages costs)
-                investment (generator/investment
-                            (generator/capital-stock gross-gdp ssp ts)
-                            ts)]
+                capital-stock (generator/capital-stock gross-gdp ssp ts)
+                investment (generator/investment capital-stock ts)]
             (list pars1
                   pars2
                   gross-gdp
                   damages
                   costs
+                  (generator/capital-stock-capita capital-stock ssp ts)
                   (generator/net-gdp-capita net-gdp ssp ts)
                   (generator/consumption net-gdp investment ssp ts)
                   investment))))
@@ -147,6 +147,7 @@ Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
                 :gross-gdp
                 :damages
                 :costs
+                :capital-stock-capita
                 :net-gdp-capita
                 :consumption])))
 

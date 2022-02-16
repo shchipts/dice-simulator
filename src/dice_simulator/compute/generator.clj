@@ -152,6 +152,13 @@ series and SSP baseline; measured in trillion 2010 USD"
      (translator/baseline-tfp ssp ts)
      (translator/baseline-labor ssp ts))))
 
+(defn capital-stock-capita
+  "Returns capital stock per capita series corresponding to time points ts
+based on capital stock series and SSP baseline; measured in thousands 2010 USD
+per year"
+  [capital-stock ssp ts]
+  (map / capital-stock (translator/baseline-labor ssp ts)))
+
 (defn costs
   "Returns abatement cost corresponding to time points ts based on SSP baseline;
 measures the ratio of the abatement cost to the output. Supported cost
