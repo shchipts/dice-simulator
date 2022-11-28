@@ -2,12 +2,13 @@
 
 Simulation routines for generic DICE model (economy module)
 
+
 The generic DICE economy module includes:
   * *constraints based on limiting case of massive CDR deployment*
   * *emissions quota for global-mean warming below 3°C*
   * *dynamic AFOLU emissions*
 
-
+    
 Simulation routines include:
   * net-emissions with constraints:
     \- do not exceed the lower limiting case of minimum gross FFI emissions in deep mitigation pathways and maximum capacity in massive CDR deployment (Kriegler et al. 2018),
