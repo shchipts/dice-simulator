@@ -1,6 +1,9 @@
 # dice-simulator
 
+[![Clojars Project](https://img.shields.io/clojars/v/org.clojars.shchipts/dice-simulator.svg)](https://clojars.org/org.clojars.shchipts/dice-simulator)
+
 Simulation routines for generic DICE model (economy module)
+
 
 
 The generic DICE economy module includes:
@@ -8,7 +11,8 @@ The generic DICE economy module includes:
   * *emissions quota for global-mean warming below 3°C*
   * *dynamic AFOLU emissions*
 
-    
+
+
 Simulation routines include:
   * net-emissions with constraints:
     \- do not exceed the lower limiting case of minimum gross FFI emissions in deep mitigation pathways and maximum capacity in massive CDR deployment (Kriegler et al. 2018),
@@ -23,6 +27,35 @@ Simulation routines include:
 
   * SSP economic curves for given temperature pathway with constraints:
     \- Economy-climate and CDR pathways should not surpass the upper limiting case of SSP baseline and couple with non-negative gross GDP, total investment and consumption
+
+## Dependency Information
+
+To include libraries add the following to your `:dependencies`:
+
+### Leiningen/Boot
+```clj
+[org.clojars.shchipts/dice-simulator "1.0.0"]
+```
+
+### Clojure CLI/deps.edn
+```
+org.clojars.shchipts/dice-simulator {:mvn/version "1.0.0"}
+```
+
+### Gradle
+```
+implementation("org.clojars.shchipts:dice-simulator:1.0.0")
+```
+
+### Maven
+
+```xml
+<dependency>
+  <groupId>org.clojars.shchipts</groupId>
+  <artifactId>dice-simulator</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
 
 ## Documentation
 
