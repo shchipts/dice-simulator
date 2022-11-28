@@ -1,11 +1,13 @@
 # dice-simulator
 
-DICE-like simulation model (economy module)
+Simulation routines for generic DICE model (economy module)
 
-The economy module includes:  
+
+The generic DICE economy module includes:  
   * *constraints based on limiting case of massive CDR deployment*
   * *emissions quota for global-mean warming below 3°C*
   * *dynamic AFOLU emissions*
+
 
 Simulation routines include:
   * net-emissions with constraints:
@@ -21,6 +23,10 @@ Simulation routines include:
 
   * SSP economic curves for given temperature pathway with constraints:
     \- Economy-climate and CDR pathways should not surpass the upper limiting case of SSP baseline and couple with non-negative gross GDP, total investment and consumption
+
+## Documentation
+
+* [API docs](https://shchipts.github.io/dice-simulator/)
 
 ## License
 
