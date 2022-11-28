@@ -28,14 +28,6 @@ Simulation routines include:
   * SSP economic curves for given temperature pathway with constraints:
     \- Economy-climate and CDR pathways should not surpass the upper limiting case of SSP baseline and couple with non-negative gross GDP, total investment and consumption
 
-## References
-
-```
-[1] Nordhaus, W. (2017). Revisiting the social cost of carbon. PNAS, 114(7): 1518-1523. https://doi.org/10.1073/pnas.1609244114
-[2] Kriegler, E., Luderer, G., Bauer, N., Baumstark, L., Fujimori, S., Popp, A., Rogelj, J., Strefler, J., & van Vuuren, D. (2018). Pathways Limiting Warming To 1.5°C: A Tale Of Turning Around In No Time?. Philosophical Transactions A, 376: 20160457. https://doi.org/10.1098/rsta.2016.0457
-[3] Friedlingstein, P., Andrew, R., Rogelj, J., Peters, G., Canadell, J., Knutti, R., Luderer, G., Raupach, M., Schaeffer, M., van Vuuren, D., & Le Quere, C. (2014). Persistent Growth of CO2 Emissions and Implications for Reaching Climate Targets. Nature Geoscience, 7: 709–715. https://doi.org/10.1038/ngeo2248
-```
-
 ## Dependency Information
 
 To include libraries add the following to your `:dependencies`:
@@ -63,6 +55,14 @@ implementation("org.clojars.shchipts:dice-simulator:1.0.0")
   <artifactId>dice-simulator</artifactId>
   <version>1.0.0</version>
 </dependency>
+```
+
+## References
+
+```
+[1] Nordhaus, W. (2017). Revisiting the social cost of carbon. PNAS, 114(7): 1518-1523. https://doi.org/10.1073/pnas.1609244114
+[2] Kriegler, E., Luderer, G., Bauer, N., Baumstark, L., Fujimori, S., Popp, A., Rogelj, J., Strefler, J., & van Vuuren, D. (2018). Pathways Limiting Warming To 1.5°C: A Tale Of Turning Around In No Time?. Philosophical Transactions A, 376: 20160457. https://doi.org/10.1098/rsta.2016.0457
+[3] Friedlingstein, P., Andrew, R., Rogelj, J., Peters, G., Canadell, J., Knutti, R., Luderer, G., Raupach, M., Schaeffer, M., van Vuuren, D., & Le Quere, C. (2014). Persistent Growth of CO2 Emissions and Implications for Reaching Climate Targets. Nature Geoscience, 7: 709–715. https://doi.org/10.1038/ngeo2248
 ```
 
 ## Documentation
