@@ -38,12 +38,12 @@ To include libraries add the following to your `:dependencies`:
 ```
 
 ### Clojure CLI/deps.edn
-```
+```clj
 org.clojars.shchipts/dice-simulator {:mvn/version "1.0.0"}
 ```
 
 ### Gradle
-```
+```clj
 implementation("org.clojars.shchipts:dice-simulator:1.0.0")
 ```
 
