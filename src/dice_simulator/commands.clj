@@ -85,6 +85,47 @@ Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
     [:SSP1 :SSP2 :SSP3 :SSP4 :SSP5])))
 
 (defn economic-growth
+  "Returns SSP economic curves for all feasible combinations of economy-climate
+pathways and CDR emisssions pathways with assumed damages and mitigation costs.
+All combinations of economy-climate pathways (net-emissions and temperature
+curves) and CDR emissions pathways should not surpass the upper limiting case
+of SSP baseline gross emissions and couple with non-negative gross GDP, total
+investment and consumption series.
+A single net-emissons curve is represented by id and parameters (y0 y_ x1 K
+midpoint-offset dt) (see net-missions-ffi for details); a single CDR emissions
+curve is represented by id and collection of logistic parameters (K midpoint
+dt). Returns curve values for net-emissions (GtCO2), CDR (GtCO2), gross GDP
+(trillion 2010 USD), damages (trillion 2010 USD), abatement costs (trillion
+2010 USD), capital stock per capita (thousands 2010 USD per year), net GDP per
+capita (thousands 2010 USD per year) and consumption (trillion 2010 USD).
+
+Supported damage functions:
+:howard-sterner2017 (Howard & Sterner 2017; Hansel et al. 2020),
+:burke2015 (Burke et al. 2015; Glanemann et al. 2020)
+For :burke2015, damages start at the value estimated with :howard-sterner2017
+
+Supported cost functions:
+:dice2013 (DICE2013), :dice2016 (DICE2016), :su2017 (Su et al. 2017)
+
+[1] Howard, P., & Sterner, T. (2017). Few and Not So Far Between: A
+Meta-analysis of Climate Damage Estimates. Environmental and Resource
+Economics, 68
+[2] Hansel, M., Drupp, M., Johansson, D., Nesje, F., Azar, C, Freeman, M.,
+Groom, B., & Sterner, T. (2020). Climate Economics Support for the UN Climate
+Targets. Nature Climate Change, 10
+[3] Burke, M., Hsiang, S., & Miguel, E. (2015). Global Non-linear Effect of
+Temperature on Economic Production. Nature, 527: 235-239.
+doi:10.1038/nature15725
+[4] Glanemann, N., Willner, S., & Levermann, A. (2020). Paris Climate Agreement
+Passes the Cost-benefit Test. Nature Communications, 11: 110.
+doi.org/10.1038/s41467-019-13961-1
+[5] DICE2013
+www.econ.yale.edu/~nordhaus/homepage/homepage/DICE2013R_100413_vanilla.gms
+[6] DICE2016
+www.econ.yale.edu/~nordhaus/homepage/homepage/DICE2016R-091916ap.gms
+[7] Su, X., Takahashi, K., Fujimori, S., Hasegawa, T., Tanaka, K., Kato, E.,
+Shiogama, X., Masui, T, & Emori, S. (2017). Emission Pathways to Achieve 2.0C
+and 1.5C Climate Targets. Earth's Future, 5: 592–604. DOI:10.1002/2016EF000492"
   [net-emissions-pars
    cdr-pars
    temperature-curves
