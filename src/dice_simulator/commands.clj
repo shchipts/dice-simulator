@@ -86,15 +86,15 @@ Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
 
 (defn economic-growth
   "Returns SSP economic curves for all feasible combinations of economy-climate
-pathways and CDR emisssions pathways with assumed damages and mitigation costs.
-All combinations of economy-climate pathways (net-emissions and temperature
+pathways and CDR emissions pathways with assumed damages and mitigation costs.
+All combinations of economy-climate pathways (net-emissions-ffi and temperature
 curves) and CDR emissions pathways should not surpass the upper limiting case
 of SSP baseline gross emissions and couple with non-negative gross GDP, total
 investment and consumption series.
-A single net-emissons curve is represented by id and parameters (y0 y_ x1 K
-midpoint-offset dt) (see net-missions-ffi for details); a single CDR emissions
+A single net-emissions-ffi curve is represented by id and parameters (y0 y_ x1 K
+midpoint-offset dt) (see net-emissions-ffi for details); a single CDR emissions
 curve is represented by id and collection of logistic parameters (K midpoint
-dt). Returns curve values for net-emissions (GtCO2), CDR (GtCO2), gross GDP
+dt). Returns curve values for net FFI emissions (GtCO2), CDR (GtCO2), gross GDP
 (trillion 2010 USD), damages (trillion 2010 USD), abatement costs (trillion
 2010 USD), capital stock per capita (thousands 2010 USD per year), net GDP per
 capita (thousands 2010 USD per year) and consumption (trillion 2010 USD).
@@ -126,14 +126,14 @@ www.econ.yale.edu/~nordhaus/homepage/homepage/DICE2016R-091916ap.gms
 [7] Su, X., Takahashi, K., Fujimori, S., Hasegawa, T., Tanaka, K., Kato, E.,
 Shiogama, X., Masui, T, & Emori, S. (2017). Emission Pathways to Achieve 2.0C
 and 1.5C Climate Targets. Earth's Future, 5: 592–604. DOI:10.1002/2016EF000492"
-  [net-emissions-pars
+  [net-emissions-ffi-pars
    cdr-pars
    temperature-curves
    damage-function
    cost-function
    ssp
    ts]
-  (->> (map list net-emissions-pars temperature-curves)
+  (->> (map list net-emissions-ffi-pars temperature-curves)
        (#(comb/cartesian-product % cdr-pars))
        (filter
         (fn [[[pars1 _] pars2]]
@@ -151,14 +151,18 @@ and 1.5C Climate Targets. Earth's Future, 5: 592–604. DOI:10.1002/2016EF000492
                 (translator/cdr-emissions (rest pars2) ts)
                 temperature)))
        (map
-        (fn [[pars1 pars2 net-emissions cdr temperature]]
-          (let [gross-gdp (generator/gross-gdp net-emissions cdr ssp ts)
+        (fn [[pars1 pars2 net-emissions-ffi cdr temperature]]
+          (let [gross-gdp (generator/gross-gdp net-emissions-ffi cdr ssp ts)
                 damages (generator/damages damage-function
                                            temperature
                                            gross-gdp
                                            ssp
                                            ts)
-                costs (generator/costs cost-function net-emissions cdr ssp ts)
+                costs (generator/costs cost-function
+                                       net-emissions-ffi
+                                       cdr
+                                       ssp
+                                       ts)
                 net-gdp (generator/net-gdp gross-gdp damages costs)
                 capital-stock (generator/capital-stock gross-gdp ssp ts)
                 investment (generator/investment capital-stock ts)]
@@ -209,3 +213,23 @@ inconsistent initial rate of growth"
                      (translator/cdr-emissions (rest cdr) ts))
                    %))
            cdr-pars)))
+
+(defn net-emissions-land-use
+  "Returns SSP CO2 AFOLU curves (GtCO2) corresponding to time points ts and net
+FFI emissions curves in SSP scenarios. A single net-ffi-emissions curve is
+represented by id and parameters (y0 y_ x1 K midpoint-offset dt) (see
+net-emissions-ffi for details). AFOLU values are constructed based on SSP land
+use emissions scenario using linear interpolation.
+
+[1] [SSP Database] https://tntcat.iiasa.ac.at/SspDb/"
+  [net-ffi-emissions-pars ssp ts]
+  (zipmap [:parameters :paths]
+          ((juxt identity
+                 #(map
+                   (fn [e]
+                     (-> (rest e)
+                         (generator/infill-net-emissions-land-use ssp)
+                         ((fn [rf]
+                            (translator/net-emissions-land-use ssp rf ts)))))
+                   %))
+           net-ffi-emissions-pars)))
