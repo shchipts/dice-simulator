@@ -60,11 +60,12 @@ linearly from x1 through x1 + 5 to remove inconsistent initial rate of degrowth.
 [2] Kriegler, E., Luderer, G., Bauer, N., Baumstark, L., Fujimori, S., Popp, A.,
 Rogelj, J., Strefler, J., & van Vuuren, D. (2018). Pathways Limiting Warming To
 1.5°C: A Tale Of Turning Around In No Time?. Philosophical Transactions A, 376:
-20160457
+20160457. https://doi.org/10.1098/rsta.2016.0457
 [3] Friedlingstein, P., Andrew, R., Rogelj, J., Peters, G., Canadell, J.,
 Knutti, R., Luderer, G., Raupach, M., Schaeffer, M., van Vuuren, D., &
 Le Quere, C. (2014). Persistent Growth of CO2 Emissions and Implications for
-Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
+Reaching Climate Targets. Nature Geoscience, Advanced Online Publication.
+https://doi.org/10.1038/ngeo2248"
   [y0 y_s x1s logistic-pars ts]
   (apply
    zipmap
@@ -109,23 +110,24 @@ Supported cost functions:
 
 [1] Howard, P., & Sterner, T. (2017). Few and Not So Far Between: A
 Meta-analysis of Climate Damage Estimates. Environmental and Resource
-Economics, 68
+Economics, 68. https://doi.org/10.1007/s10640-017-0166-z
 [2] Hansel, M., Drupp, M., Johansson, D., Nesje, F., Azar, C, Freeman, M.,
 Groom, B., & Sterner, T. (2020). Climate Economics Support for the UN Climate
-Targets. Nature Climate Change, 10
+Targets. Nature Climate Change, 10. https://doi.org/10.1038/s41558-020-0833-x
 [3] Burke, M., Hsiang, S., & Miguel, E. (2015). Global Non-linear Effect of
 Temperature on Economic Production. Nature, 527: 235-239.
-doi:10.1038/nature15725
+https://doi.org/10.1038/nature15725
 [4] Glanemann, N., Willner, S., & Levermann, A. (2020). Paris Climate Agreement
 Passes the Cost-benefit Test. Nature Communications, 11: 110.
-doi.org/10.1038/s41467-019-13961-1
+https://doi.org/10.1038/s41467-019-13961-1
 [5] DICE2013
 www.econ.yale.edu/~nordhaus/homepage/homepage/DICE2013R_100413_vanilla.gms
 [6] DICE2016
 www.econ.yale.edu/~nordhaus/homepage/homepage/DICE2016R-091916ap.gms
 [7] Su, X., Takahashi, K., Fujimori, S., Hasegawa, T., Tanaka, K., Kato, E.,
 Shiogama, X., Masui, T, & Emori, S. (2017). Emission Pathways to Achieve 2.0C
-and 1.5C Climate Targets. Earth's Future, 5: 592–604. DOI:10.1002/2016EF000492"
+and 1.5C Climate Targets. Earth's Future, 5: 592–604.
+https://doi.org/10.1002/2016EF000492"
   [net-emissions-ffi-pars
    cdr-pars
    temperature-curves
@@ -223,13 +225,10 @@ use emissions scenario using linear interpolation.
 
 [1] [SSP Database] https://tntcat.iiasa.ac.at/SspDb/"
   [net-ffi-emissions-pars ssp ts]
-  (zipmap [:parameters :paths]
-          ((juxt identity
-                 #(map
-                   (fn [e]
-                     (-> (rest e)
-                         (generator/infill-net-emissions-land-use ssp)
-                         ((fn [rf]
-                            (translator/net-emissions-land-use ssp rf ts)))))
-                   %))
-           net-ffi-emissions-pars)))
+  (map
+   (fn [e]
+     (-> (rest e)
+         (generator/infill-net-emissions-land-use ssp)
+         ((fn [rf]
+            (translator/net-emissions-land-use ssp rf ts)))))
+   net-ffi-emissions-pars))

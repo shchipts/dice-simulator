@@ -70,16 +70,16 @@ start at the value estimated with :howard-sterner2017
 
 [1] Howard, P., & Sterner, T. (2017). Few and Not So Far Between: A
 Meta-analysis of Climate Damage Estimates. Environmental and Resource
-Economics, 68
+Economics, 68. https://doi.org/10.1007/s10640-017-0166-z
 [2] Hansel, M., Drupp, M., Johansson, D., Nesje, F., Azar, C, Freeman, M.,
 Groom, B., & Sterner, T. (2020). Climate Economics Support for the UN Climate
-Targets. Nature Climate Change, 10
+Targets. Nature Climate Change, 10. https://doi.org/10.1038/s41558-020-0833-x
 [3] Burke, M., Hsiang, S., & Miguel, E. (2015). Global Non-linear Effect of
 Temperature on Economic Production. Nature, 527: 235-239.
-doi:10.1038/nature15725
+https://doi.org/10.1038/nature15725
 [4] Glanemann, N., Willner, S., & Levermann, A. (2020). Paris Climate Agreement
 Passes the Cost-benefit Test. Nature Communications, 11: 110.
-doi.org/10.1038/s41467-019-13961-1"
+https://doi.org/10.1038/s41467-019-13961-1"
   [damage-function temperature gross-gdp ssp ts]
   (let [howard-sternerf #(-> (- % 0.115)
                              (math/expt 2)
@@ -170,7 +170,8 @@ www.econ.yale.edu/~nordhaus/homepage/homepage/DICE2013R_100413_vanilla.gms
 www.econ.yale.edu/~nordhaus/homepage/homepage/DICE2016R-091916ap.gms
 [3] Su, X., Takahashi, K., Fujimori, S., Hasegawa, T., Tanaka, K., Kato, E.,
 Shiogama, X., Masui, T, & Emori, S. (2017). Emission Pathways to Achieve 2.0C
-and 1.5C Climate Targets. Earth's Future, 5: 592–604. DOI:10.1002/2016EF000492"
+and 1.5C Climate Targets. Earth's Future, 5: 592–604
+https://doi.org/10.1002/2016EF000492"
   [cost-function net-emissions cdr-emissions ssp ts]
   (map
    (fn [e cdr sigma t]

@@ -1,4 +1,4 @@
-(defproject org.clojars.shchipts/dice-simulator "1.0.1"
+(defproject org.clojars.shchipts/dice-simulator "1.0.2"
   :description "DICE-like simulation model"
   :url "https://github.com/shchipts/dice-simulator"
   :scm {:name "git"

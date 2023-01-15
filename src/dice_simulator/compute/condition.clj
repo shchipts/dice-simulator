@@ -43,7 +43,7 @@ feasible; false, otherwise
 [1] Kriegler, E., Luderer, G., Bauer, N., Baumstark, L., Fujimori, S., Popp, A.,
 Rogelj, J., Strefler, J., & van Vuuren, D. (2018). Pathways Limiting Warming To
 1.5°C: A Tale Of Turning Around In No Time?. Philosophical Transactions A, 376:
-20160457"
+20160457. https://doi.org/10.1098/rsta.2016.0457"
   [net-emissions-curve]
   (->> (keys limiting-case)
        (translator/net-emissions-ffi net-emissions-curve)
@@ -79,7 +79,8 @@ al. (2014) for 50% probability of global-mean warming below 3 °C.
 [1] Friedlingstein, P., Andrew, R., Rogelj, J., Peters, G., Canadell, J.,
 Knutti, R., Luderer, G., Raupach, M., Schaeffer, M., van Vuuren, D., &
 Le Quere, C. (2014). Persistent Growth of CO2 Emissions and Implications for
-Reaching Climate Targets. Nature Geoscience, Advanced Online Publication"
+Reaching Climate Targets. Nature Geoscience, Advanced Online Publication.
+https://doi.org/10.1038/ngeo2248"
   [net-emissions-curve ssp scenario]
   (let [quota 3300]
     (->> ((juxt (partial translator/net-emissions-ffi net-emissions-curve)

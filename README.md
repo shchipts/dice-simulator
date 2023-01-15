@@ -35,17 +35,17 @@ To include libraries add the following to your `:dependencies`:
 
 ### Leiningen/Boot
 ```clj
-[org.clojars.shchipts/dice-simulator "1.0.1"]
+[org.clojars.shchipts/dice-simulator "1.0.2"]
 ```
 
 ### Clojure CLI/deps.edn
 ```clj
-org.clojars.shchipts/dice-simulator {:mvn/version "1.0.1"}
+org.clojars.shchipts/dice-simulator {:mvn/version "1.0.2"}
 ```
 
 ### Gradle
 ```clj
-implementation("org.clojars.shchipts:dice-simulator:1.0.1")
+implementation("org.clojars.shchipts:dice-simulator:1.0.2")
 ```
 
 ### Maven
@@ -54,7 +54,7 @@ implementation("org.clojars.shchipts:dice-simulator:1.0.1")
 <dependency>
   <groupId>org.clojars.shchipts</groupId>
   <artifactId>dice-simulator</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
 </dependency>
 ```
 
