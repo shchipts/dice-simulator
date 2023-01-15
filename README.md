@@ -1,7 +1,7 @@
 # dice-simulator
 
 [![Clojars Project](https://img.shields.io/clojars/v/org.clojars.shchipts/dice-simulator.svg)](https://clojars.org/org.clojars.shchipts/dice-simulator)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7373906.svg)](https://doi.org/10.5281/zenodo.7373906)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7373905.svg)](https://doi.org/10.5281/zenodo.7373905)
 
 Simulation routines for generic DICE model (economy module)
 
